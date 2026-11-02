@@ -17,8 +17,8 @@ Still open: D7 cloud/region, D10 retention minima, D11 DR targets (do not claim 
 
 | Slice | Status |
 |---|---|
-| S0 Foundation | In progress (this PR) |
-| S1 Mock connector → sync → dashboard | Not started |
+| S0 Foundation | Done (PR #1) |
+| S1 Mock connector → sync → dashboard | In progress (this PR) |
 | S2–S8 | Not started |
 
 ## S0 exit criteria
@@ -29,3 +29,13 @@ Still open: D7 cloud/region, D10 retention minima, D11 DR targets (do not claim 
 - [x] Append-only audit on sensitive actions
 - [x] RLS + cross-tenant denial tests green
 - [x] CI workflow runs lint/typecheck/tests
+
+## S1 exit criteria
+
+- [x] Mock connector CRUD (`connection:manage`)
+- [x] Manual sync with `Idempotency-Key`
+- [x] BullMQ worker + daily schedule at 00:00 org/company TZ
+- [x] Versioned `DataSnapshot` in Postgres
+- [x] Persistent dashboard with freshness (`fresh` / `stale` / `never`) + ETag
+- [x] RLS + cross-tenant denial tests for new tables
+- [x] Spanish UI: Conexiones + Dashboard

@@ -32,6 +32,10 @@ model Organization {
   roleBindings RoleBinding[]
   sessions  Session[]
   auditEvents AuditEvent[]
+  connections Connection[]
+  dataSnapshots DataSnapshot[]
+  syncRuns  SyncRun[]
+  dashboards Dashboard[]
 }
 
 model Company {
@@ -45,6 +49,8 @@ model Company {
   memberships    Membership[]
   roleBindings   RoleBinding[]
   sessions       Session[]
+  connections    Connection[]
+  dashboards     Dashboard[]
 
   @@index([organizationId])
   @@unique([organizationId, name])
@@ -145,4 +151,81 @@ model AuditEvent {
   actor          User?         @relation("AuditActor", fields: [actorUserId], references: [id], onDelete: SetNull)
 
   @@index([organizationId, createdAt])
+}
+
+/// Mock (and later real) connector instance scoped to an organization.
+model Connection {
+  id             String   @id @default(cuid())
+  organizationId String
+  companyId      String?
+  name           String
+  provider       String   @default("mock")
+  status         String   @default("active")
+  config         Json     @default("{}")
+  lastSyncedAt   DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  company        Company?     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  snapshots      DataSnapshot[]
+  syncRuns       SyncRun[]
+  dashboards     Dashboard[]
+
+  @@index([organizationId])
+  @@index([organizationId, companyId])
+}
+
+/// Versioned analytical snapshot produced by a sync run.
+model DataSnapshot {
+  id             String   @id @default(cuid())
+  organizationId String
+  connectionId   String
+  version        Int
+  rowCount       Int
+  payload        Json
+  etag           String
+  createdAt      DateTime @default(now())
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  connection     Connection   @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+
+  @@unique([connectionId, version])
+  @@index([organizationId, connectionId])
+}
+
+model SyncRun {
+  id             String   @id @default(cuid())
+  organizationId String
+  connectionId   String
+  trigger        String
+  status         String   @default("queued")
+  idempotencyKey String?
+  errorMessage   String?
+  snapshotId     String?
+  startedAt      DateTime?
+  finishedAt     DateTime?
+  createdAt      DateTime @default(now())
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  connection     Connection   @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, idempotencyKey])
+  @@index([connectionId, createdAt])
+  @@index([organizationId, createdAt])
+}
+
+/// Persistent dashboard bound to one connection (S1: freshness panel).
+model Dashboard {
+  id              String   @id @default(cuid())
+  organizationId  String
+  companyId       String?
+  connectionId    String
+  name            String
+  staleAfterHours Int      @default(26)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  company         Company?     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  connection      Connection   @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@index([connectionId])
 }

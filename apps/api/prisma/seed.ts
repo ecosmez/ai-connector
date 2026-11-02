@@ -192,11 +192,43 @@ async function main() {
     },
   });
 
+  await prisma.$executeRaw`SELECT set_config('app.current_org_id', ${orgA.id}, false)`;
+
+  const connection = await prisma.connection.upsert({
+    where: { id: "seed_connection_a1" },
+    create: {
+      id: "seed_connection_a1",
+      organizationId: orgA.id,
+      companyId: companyA1.id,
+      name: "Conector de prueba — Norte",
+      provider: "mock",
+      status: "active",
+      config: { kind: "mock", locale: "es" },
+    },
+    update: { name: "Conector de prueba — Norte", status: "active" },
+  });
+
+  await prisma.dashboard.upsert({
+    where: { id: "seed_dashboard_a1" },
+    create: {
+      id: "seed_dashboard_a1",
+      organizationId: orgA.id,
+      companyId: companyA1.id,
+      connectionId: connection.id,
+      name: "Panel de frescura",
+      staleAfterHours: 26,
+    },
+    update: { name: "Panel de frescura" },
+  });
+
+  await prisma.$executeRaw`SELECT set_config('app.current_org_id', '', false)`;
+
   console.log("Seed complete:", {
     alice: alice.email,
     bob: bob.email,
     orgs: [orgA.name, orgB.name],
     companies: [companyA1.name, companyA2.name],
+    connection: connection.name,
   });
 }
 

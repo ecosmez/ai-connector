@@ -162,3 +162,78 @@ main {
   color: var(--danger);
   font-size: 0.9rem;
 }
+
+.freshness-badge {
+  display: inline-block;
+  margin: 10px 0 4px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.freshness-fresh {
+  color: var(--ok);
+}
+
+.freshness-stale {
+  color: #d97706;
+}
+
+.freshness-never {
+  color: var(--muted);
+}
+
+.metric-list {
+  list-style: none;
+  padding: 0;
+  margin: 16px 0 0;
+  display: grid;
+  gap: 8px;
+}
+
+.metric-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  border-top: 1px solid var(--line);
+  color: var(--ink);
+  font-size: 0.95rem;
+}
+
+.metric-list li span {
+  color: var(--muted);
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.panel section {
+  animation: rise-in 420ms ease both;
+}
+
+.panel section:nth-child(2) {
+  animation-delay: 60ms;
+}
+
+.panel section:nth-child(3) {
+  animation-delay: 120ms;
+}
+
+.button-primary {
+  transition:
+    transform 160ms ease,
+    background 160ms ease,
+    box-shadow 220ms ease;
+}
+
+.button-primary:hover {
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--accent) 35%, transparent);
+}

@@ -17,8 +17,11 @@ export default defineConfig({
     environment: "node",
     setupFiles: ["test/setup.ts"],
     fileParallelism: false,
+    pool: "forks",
+    maxWorkers: 1,
     hookTimeout: 60000,
     testTimeout: 60000,
     include: ["test/**/*.spec.ts"],
   },
 });
+

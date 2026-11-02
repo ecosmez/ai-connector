@@ -16,7 +16,7 @@ export default function HomePage() {
       <h1 className="brand">AI Connector</h1>
       <p className="lead">
         Plataforma multi-tenant de inteligencia de negocios y automatización.
-        Esta base (S0) ofrece identidad, organizaciones, compañías y auditoría.
+        Sincroniza un conector de prueba y mira la frescura de tus datos.
       </p>
 
       <div className="actions">
@@ -30,17 +30,17 @@ export default function HomePage() {
 
       <div className="panel">
         <section>
-          <h2>Fundación lista</h2>
+          <h2>Conector de prueba</h2>
           <p>
-            Autenticación local, aislamiento por organización y eventos de
-            auditoría append-only.
+            Crea una conexión mock, lanza sync manual o espera la corrida diaria
+            a las 00:00 en la zona de tu organización.
           </p>
         </section>
         <section>
-          <h2>Siguiente incremento</h2>
+          <h2>Dashboard con frescura</h2>
           <p>
-            S1: conector de prueba, sincronización diaria (00:00 zona org) y un
-            dashboard persistente con frescura de datos.
+            Un panel persistente muestra métricas del último snapshot y si los
+            datos están frescos u obsoletos.
           </p>
         </section>
       </div>
