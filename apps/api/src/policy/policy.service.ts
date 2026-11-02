@@ -13,6 +13,8 @@ export class PolicyService {
     companyId?: string | null,
   ): Promise<Set<string>> {
     const now = new Date();
+    // When companyId is omitted, include every binding in the org (org-wide and
+    // company-scoped). When set, include org-wide bindings plus that company.
     const bindings = await this.prisma.roleBinding.findMany({
       where: {
         userId,
@@ -21,11 +23,9 @@ export class PolicyService {
           {
             OR: [{ expiresAt: null }, { expiresAt: { gt: now } }],
           },
-          {
-            OR: companyId
-              ? [{ companyId: null }, { companyId }]
-              : [{ companyId: null }],
-          },
+          ...(companyId
+            ? [{ OR: [{ companyId: null }, { companyId }] }]
+            : []),
         ],
       },
       include: {
