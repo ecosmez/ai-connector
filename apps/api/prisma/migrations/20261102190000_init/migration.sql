@@ -217,32 +217,32 @@ ALTER TABLE "AuditEvent" ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY company_tenant_isolation ON "Company"
   USING (
-    current_setting('app.current_org_id', true) = ''
+    COALESCE(current_setting('app.current_org_id', true), '') = ''
     OR "organizationId" = current_setting('app.current_org_id', true)
   );
 
 CREATE POLICY membership_tenant_isolation ON "Membership"
   USING (
-    current_setting('app.current_org_id', true) = ''
+    COALESCE(current_setting('app.current_org_id', true), '') = ''
     OR "organizationId" = current_setting('app.current_org_id', true)
   );
 
 CREATE POLICY role_tenant_isolation ON "Role"
   USING (
-    current_setting('app.current_org_id', true) = ''
+    COALESCE(current_setting('app.current_org_id', true), '') = ''
     OR "organizationId" IS NULL
     OR "organizationId" = current_setting('app.current_org_id', true)
   );
 
 CREATE POLICY role_binding_tenant_isolation ON "RoleBinding"
   USING (
-    current_setting('app.current_org_id', true) = ''
+    COALESCE(current_setting('app.current_org_id', true), '') = ''
     OR "organizationId" = current_setting('app.current_org_id', true)
   );
 
 CREATE POLICY audit_tenant_isolation ON "AuditEvent"
   USING (
-    current_setting('app.current_org_id', true) = ''
+    COALESCE(current_setting('app.current_org_id', true), '') = ''
     OR "organizationId" IS NULL
     OR "organizationId" = current_setting('app.current_org_id', true)
   );

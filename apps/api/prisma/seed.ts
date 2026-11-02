@@ -20,6 +20,8 @@ async function ensurePermissions() {
 }
 
 async function main() {
+  // Ensure bootstrap path is unrestricted under RLS.
+  await prisma.$executeRaw`SELECT set_config('app.current_org_id', '', false)`;
   await ensurePermissions();
 
   const passwordHash = await bcrypt.hash("Password123!", 10);
