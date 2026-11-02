@@ -1,4 +1,4 @@
-# API contracts — S0
+# API contracts — S0 + S1
 
 Base URL: `http://localhost:3001`  
 Auth: `Authorization: Bearer <sessionToken>`  
@@ -30,10 +30,26 @@ Errors: `{ "statusCode": number, "code": string, "message": string }`
 |---|---|---|
 | GET | `/organizations/:orgId/audit-events` | `audit:read` |
 
+## Connections & sync (S1)
+
+| Method | Path | Permission | Notes |
+|---|---|---|---|
+| GET | `/organizations/:orgId/connections` | `connection:manage` | Lists mock connectors in scope |
+| POST | `/organizations/:orgId/connections` | `connection:manage` | Creates mock connector + default dashboard; schedules daily 00:00 TZ sync |
+| GET | `/organizations/:orgId/connections/:id` | `connection:manage` | |
+| POST | `/organizations/:orgId/connections/:id/sync` | `connection:manage` | Header `Idempotency-Key` optional; replays same run when key repeats |
+| GET | `/organizations/:orgId/sync-runs` | `connection:manage` | Optional `?connectionId=` |
+| GET | `/organizations/:orgId/sync-runs/:id` | `connection:manage` | |
+
+## Dashboards (S1)
+
+| Method | Path | Permission | Notes |
+|---|---|---|---|
+| GET | `/organizations/:orgId/dashboards` | `dashboard:read` | Includes freshness + latest snapshot payload |
+| GET | `/organizations/:orgId/dashboards/:id` | `dashboard:read` | Sends `ETag`; `If-None-Match` → 304 |
+
 ## Health
 
 | Method | Path |
 |---|---|
 | GET | `/health` |
-
-Idempotency-Key and ETag conventions land with S1 mutating sync/BI routes.

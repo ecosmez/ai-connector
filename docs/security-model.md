@@ -1,4 +1,4 @@
-# Security model — S0
+# Security model — S0 + S1
 
 ## Authentication
 
@@ -8,7 +8,7 @@
 
 ## Authorization
 
-- Permissions are `resource:action` strings (e.g. `organization:read`, `company:manage`, `audit:read`).
+- Permissions are `resource:action` strings (e.g. `organization:read`, `company:manage`, `audit:read`, `connection:manage`, `dashboard:read`).
 - Evaluation uses role bindings in the active org (and company when binding is company-scoped).
 - Company admins cannot escalate to other companies.
 - Platform superadmin role does **not** auto-grant private tenant data (support access later, consented + audited).
@@ -16,9 +16,14 @@
 ## Isolation
 
 - Application policy checks on every mutating/query route.
-- PostgreSQL RLS on tenant-owned tables as defense in depth.
+- PostgreSQL RLS on tenant-owned tables as defense in depth (including `Connection`, `DataSnapshot`, `SyncRun`, `Dashboard`).
 - App DB role must be **NOSUPERUSER** and **NOBYPASSRLS** (superusers bypass FORCE RLS).
 - Negative tests: cross-org IDOR must return 403/404.
+
+## Sync / idempotency
+
+- Manual sync accepts `Idempotency-Key`; same org+key returns the original `SyncRun`.
+- Dashboard GET supports `ETag` / `If-None-Match` (304) for snapshot caching.
 
 ## Audit
 

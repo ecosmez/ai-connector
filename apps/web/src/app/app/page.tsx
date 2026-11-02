@@ -2,19 +2,8 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { readToken } from "@/lib/api";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
-
-type MeResponse = {
-  user: { name: string; email: string };
-  memberships: Array<{
-    organizationId: string;
-    organizationName: string;
-    companyId: string | null;
-    companyName: string | null;
-  }>;
-};
+import { AppNav } from "@/components/app-nav";
+import { MeResponse, apiRequest, readToken } from "@/lib/api";
 
 export default function AppHomePage() {
   const [me, setMe] = useState<MeResponse | null>(null);
@@ -26,39 +15,35 @@ export default function AppHomePage() {
       setError("Sesión no encontrada. Inicia sesión.");
       return;
     }
-    fetch(`${API_URL}/auth/me`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then(async (res) => {
-        if (!res.ok) throw new Error("Sesión inválida");
-        return res.json();
-      })
+    apiRequest<MeResponse>("/auth/me", { token })
       .then(setMe)
-      .catch((err) => setError(err.message));
+      .catch((err: Error) => setError(err.message));
   }, []);
 
   return (
     <main>
-      <nav className="nav">
-        <Link href="/">
-          <strong>AI Connector</strong>
-        </Link>
-        <span>Inicio</span>
-      </nav>
+      <AppNav current="Inicio" />
       <h1 className="brand">Inicio</h1>
       {error && <p className="error">{error}</p>}
       {me && (
         <>
           <p className="lead">
-            Hola, {me.user.name}. Membresías activas:
+            Hola, {me.user.name}. Elige una conexión o revisa la frescura del
+            panel.
           </p>
+          <div className="actions">
+            <Link className="button button-primary" href="/app/conexiones">
+              Conexiones
+            </Link>
+            <Link className="button button-secondary" href="/app/dashboard">
+              Ver dashboard
+            </Link>
+          </div>
           <div className="panel">
             {me.memberships.length === 0 && (
               <section>
                 <h2>Sin organización</h2>
-                <p>
-                  Crea una organización desde la API o el próximo wizard (S1/S3).
-                </p>
+                <p>Crea una organización desde la API para comenzar.</p>
               </section>
             )}
             {me.memberships.map((m) => (

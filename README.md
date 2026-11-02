@@ -4,7 +4,8 @@ SaaS multi-tenant de inteligencia de negocios y automatización (Fase 1 en const
 
 ## Estado
 
-**S0 Foundation** — identidad local, organizaciones/compañías, RBAC, auditoría append-only, RLS en Postgres, UI Spanish-first.
+**S1** — conector mock, sync (manual + 00:00 zona org vía BullMQ), snapshots versionados, dashboard con frescura.  
+S0 (identidad, tenancy, RBAC, auditoría, RLS) ya fusionado.
 
 Decisiones aceptadas: ver `docs/adr/`.
 
@@ -13,7 +14,7 @@ Decisiones aceptadas: ver `docs/adr/`.
 - TypeScript monorepo (pnpm)
 - `apps/web` — Next.js
 - `apps/api` — NestJS + Prisma + PostgreSQL
-- Redis/BullMQ reservado para S1 jobs
+- Redis + BullMQ — cola `connection-sync`
 
 ## Desarrollo local
 
