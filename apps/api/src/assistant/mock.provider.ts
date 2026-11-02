@@ -6,6 +6,83 @@ import {
   LlmToolDefinition,
 } from "./llm.types";
 
+function formatToolSummary(toolName: string, data: unknown): string {
+  if (toolName === "get_dashboard_overview" && data && typeof data === "object") {
+    const d = data as {
+      name?: string;
+      connection?: string;
+      lastSyncedAt?: string | null;
+      kpis?: Array<{ label: string; value: number | null; unit?: string | null }>;
+      goals?: Array<{
+        name: string;
+        actualValue: number | null;
+        targetValue: number;
+        statusLabel: string;
+      }>;
+    };
+    const kpiLines =
+      d.kpis
+        ?.map(
+          (k) =>
+            `- ${k.label}: ${k.value ?? "—"}${k.unit ? ` ${k.unit}` : ""}`,
+        )
+        .join("\n") ?? "";
+    const goalLines =
+      d.goals
+        ?.map(
+          (g) =>
+            `- ${g.name}: ${g.actualValue ?? "—"} / meta ${g.targetValue} (${g.statusLabel})`,
+        )
+        .join("\n") ?? "";
+    return [
+      `Panel «${d.name ?? "dashboard"}» (${d.connection ?? "conexión"}).`,
+      d.lastSyncedAt
+        ? `Última sincronización: ${d.lastSyncedAt}.`
+        : "Sin sincronización registrada.",
+      kpiLines ? `KPIs:\n${kpiLines}` : "Sin KPIs disponibles.",
+      goalLines ? `Metas:\n${goalLines}` : "Sin metas activas.",
+    ].join("\n");
+  }
+  if (toolName === "list_goals" && Array.isArray(data)) {
+    if (data.length === 0) return "No hay metas activas en esta organización.";
+    return (
+      "Metas activas:\n" +
+      data
+        .map(
+          (g: { name?: string; metricKey?: string; targetValue?: number }) =>
+            `- ${g.name}: ${g.metricKey} → ${g.targetValue}`,
+        )
+        .join("\n")
+    );
+  }
+  if (toolName === "list_dashboards" && Array.isArray(data)) {
+    if (data.length === 0) return "No hay dashboards todavía.";
+    return (
+      "Dashboards:\n" +
+      data
+        .map(
+          (d: { name?: string; connectionName?: string }) =>
+            `- ${d.name} (${d.connectionName ?? "sin conexión"})`,
+        )
+        .join("\n")
+    );
+  }
+  if (
+    toolName === "list_semantic_metrics" &&
+    data &&
+    typeof data === "object" &&
+    "metrics" in data
+  ) {
+    const metrics = (data as { name?: string; metrics: Array<{ label: string; key: string }> })
+      .metrics;
+    return (
+      `Modelo «${(data as { name?: string }).name ?? "semántico"}»:\n` +
+      metrics.map((m) => `- ${m.label} (${m.key})`).join("\n")
+    );
+  }
+  return `Datos (${toolName}): ${JSON.stringify(data).slice(0, 1200)}`;
+}
+
 /**
  * Deterministic provider for tests/dev without OPENAI_API_KEY.
  * Emits allowlisted tool calls when the user asks about KPIs/metas/dashboards.
@@ -64,9 +141,7 @@ export class MockLlmProvider implements LlmProvider {
           error?: string;
         };
         if (payload.ok && payload.data) {
-          summary =
-            `Resumen con datos de tu organización (vía ${lastTool.name}):\n` +
-            `${JSON.stringify(payload.data, null, 2).slice(0, 1800)}`;
+          summary = formatToolSummary(lastTool.name, payload.data);
         } else {
           summary = `No pude obtener datos (${payload.error ?? "error"}).`;
         }
