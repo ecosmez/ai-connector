@@ -1,5 +1,6 @@
 import { Module } from "@nestjs/common";
 import { BullModule } from "@nestjs/bullmq";
+import { AssistantModule } from "./assistant/assistant.module";
 import { AuditModule } from "./audit/audit.module";
 import { AuthModule } from "./auth/auth.module";
 import { ConnectorsModule } from "./connectors/connectors.module";
@@ -28,6 +29,7 @@ import { TenancyModule } from "./tenancy/tenancy.module";
     SemanticModule,
     GoalsModule,
     DashboardsModule,
+    AssistantModule,
   ],
   controllers: [HealthController],
 })

@@ -3,16 +3,16 @@
 **Status:** Living document for Fase 1 construction  
 **Stack ADRs:** [0001](adr/0001-application-stack.md) · [0002](adr/0002-database-and-analytics.md) · [0003](adr/0003-queue-and-workflow-engine.md) · [0004](adr/0004-llm-provider.md) · [0005](adr/0005-locale-and-sync-timezone.md)
 
-## Current shape (S2)
+## Current shape (S3)
 
 Modular monolith:
 
 | Process | Path | Role |
 |---|---|---|
-| Web | `apps/web` | Next.js UI (Spanish-first: auth, conexiones, análisis, metas) |
-| API | `apps/api` | NestJS: identity, policy, audit, connectors, sync, semantic, goals, dashboards |
+| Web | `apps/web` | Next.js UI (Spanish-first: auth, conexiones, análisis, metas, asistente) |
+| API | `apps/api` | NestJS: identity, policy, audit, connectors, sync, semantic, goals, dashboards, assistant |
 | Shared | `packages/shared` | DTOs, permission constants, error codes |
-| Postgres | docker-compose / local | OLTP + versioned snapshots + semantic layer |
+| Postgres | docker-compose / local | OLTP + snapshots + semantic + assistant threads |
 | Redis | docker-compose / local | BullMQ connection-sync queue |
 
 ## Domain modules (API)
@@ -26,8 +26,9 @@ Modular monolith:
 - `semantic` — semantic model + KPI resolution from snapshots
 - `goals` — targets vs KPI actuals
 - `dashboards` — freshness panel + KPIs + goals + ETag
+- `assistant` — LLM orchestrator (OpenAI/mock), tool allowlist, sanitization
 
-Deferred: real ERP/CRM connectors, full BI editor, AI wizard (S3), workflows, notifications center, platform console.
+Deferred: real ERP/CRM connectors, full BI editor, workflows, notifications center, platform console.
 
 ## Request path (tenant safety)
 
@@ -50,6 +51,13 @@ Deferred: real ERP/CRM connectors, full BI editor, AI wizard (S3), workflows, no
 2. Dashboard read resolves KPIs via `sourcePath` against latest snapshot payload.
 3. Active goals compare actual KPI vs `targetValue` (`gte` / `lte`) → En meta / Fuera de meta / Sin dato.
 
+## Assistant path (S3)
+
+1. Feature flag `AI_ENABLED`; provider `AI_PROVIDER=mock|openai` (mock if no `OPENAI_API_KEY`).
+2. Sanitize + wrap user text; system prompt forbids instruction override.
+3. Tool loop (max 4) over allowlisted read-only tools scoped by `organizationId` + RLS.
+4. Persist user/tool/assistant messages; audit `assistant.turn` with tool names only.
+
 ## Non-goals in this codebase stage
 
-- Full BI editor drag/drop, AI wizard, workflow engine, SSO/SCIM/MFA UI, multi-region DR claims.
+- Full BI editor drag/drop, write-capable AI tools / auto-automations, workflow engine, SSO/SCIM/MFA UI, multi-region DR claims.

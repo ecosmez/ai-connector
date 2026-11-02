@@ -1,4 +1,4 @@
-# Data model — S0 + S1 + S2
+# Data model — S0–S3
 
 See also product spec §10. Table names below match Prisma models.
 
@@ -44,6 +44,13 @@ See also product spec §10. Table names below match Prisma models.
 - Daily sync timezone: company TZ when set, else organization TZ.
 - One `SemanticModel` per connection; metric keys unique within the model.
 
+## Entities (S3)
+
+| Model | Scope | Purpose |
+|---|---|---|
+| `AssistantThread` | org + user | Conversation container |
+| `AssistantMessage` | org + thread | `user` / `assistant` / `tool` messages; optional `toolPayload` |
+
 ## Later (not migrated yet)
 
-Assistant, workflows, approvals — per spec §10. Full BI editor deferred past S2.
+Workflows, approvals — per spec §10. Full BI editor deferred. AI tools remain read-only until confirmed write actions land.

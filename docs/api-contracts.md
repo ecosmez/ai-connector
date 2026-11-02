@@ -1,4 +1,4 @@
-# API contracts — S0 + S1 + S2
+# API contracts — S0–S3
 
 Base URL: `http://localhost:3001`  
 Auth: `Authorization: Bearer <sessionToken>`  
@@ -61,6 +61,18 @@ Errors: `{ "statusCode": number, "code": string, "message": string }`
 |---|---|---|---|
 | GET | `/organizations/:orgId/dashboards` | `dashboard:read` | Freshness + `kpis` + `goals` + snapshot |
 | GET | `/organizations/:orgId/dashboards/:id` | `dashboard:read` | Sends `ETag`; `If-None-Match` → 304 |
+
+## Assistant (S3)
+
+| Method | Path | Permission | Notes |
+|---|---|---|---|
+| GET | `/assistant/status` | authenticated | `{ enabled, mode: mock\|openai }` |
+| POST | `/organizations/:orgId/assistant/threads` | `assistant:use` | Create thread |
+| GET | `/organizations/:orgId/assistant/threads` | `assistant:use` | List current user's threads |
+| GET | `/organizations/:orgId/assistant/threads/:id` | `assistant:use` | Thread + messages |
+| POST | `/organizations/:orgId/assistant/threads/:id/messages` | `assistant:use` | User turn → tool loop → assistant reply |
+
+Allowlisted tools (read-only): `list_dashboards`, `get_dashboard_overview`, `list_goals`, `list_semantic_metrics`.
 
 ## Health
 

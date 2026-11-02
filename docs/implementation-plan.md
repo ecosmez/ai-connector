@@ -19,34 +19,20 @@ Still open: D7 cloud/region, D10 retention minima, D11 DR targets (do not claim 
 |---|---|
 | S0 Foundation | Done (PR #1) |
 | S1 Mock connector → sync → dashboard | Done (PR #2) |
-| S2 Semantic model + KPIs + goals | In progress (this PR) |
-| S3–S8 | Not started (S3 = AI wizard) |
+| S2 Semantic model + KPIs + goals | Done (PR #3) |
+| S3 AI assistant (tool allowlist) | In progress (this PR) |
+| S4–S8 | Not started (S4 = workflows eval) |
 
-## S0 exit criteria
+## S0–S2 exit criteria
 
-- [x] ADRs committed
-- [x] Register/login/session context switch
-- [x] Org + company CRUD with RBAC
-- [x] Append-only audit on sensitive actions
-- [x] RLS + cross-tenant denial tests green
-- [x] CI workflow runs lint/typecheck/tests
+See prior PRs / checklists (all complete).
 
-## S1 exit criteria
+## S3 exit criteria
 
-- [x] Mock connector CRUD (`connection:manage`)
-- [x] Manual sync with `Idempotency-Key`
-- [x] BullMQ worker + daily schedule at 00:00 org/company TZ
-- [x] Versioned `DataSnapshot` in Postgres
-- [x] Persistent dashboard with freshness (`fresh` / `stale` / `never`) + ETag
-- [x] RLS + cross-tenant denial tests for new tables
-- [x] Spanish UI: Conexiones + Dashboard
-
-## S2 exit criteria
-
-- [x] `SemanticModel` + `MetricDefinition` with RLS
-- [x] Auto-bootstrap mock metrics on connection create
-- [x] KPI resolution from snapshot (`metrics.*`, `rows.*.field` aggregations)
-- [x] `Goal` CRUD + evaluation (En meta / Fuera de meta / Sin dato)
-- [x] Dashboard payload includes `kpis` + `goals`
-- [x] Spanish UI: Análisis KPIs/metas + página Metas
-- [x] Isolation tests for semantic/goals
+- [x] Feature-flagged assistant (`AI_ENABLED`) with OpenAI adapter + mock provider
+- [x] `AssistantThread` / `AssistantMessage` + RLS
+- [x] Read-only tool allowlist (dashboards, KPIs, goals, semantic metrics)
+- [x] User-text sanitization / untrusted wrapping (prompt-injection hardening)
+- [x] Audit `assistant.turn` without secrets
+- [x] Spanish UI `/app/asistente`
+- [x] Isolation + mock-provider tests
