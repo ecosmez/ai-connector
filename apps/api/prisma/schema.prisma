@@ -36,6 +36,9 @@ model Organization {
   dataSnapshots DataSnapshot[]
   syncRuns  SyncRun[]
   dashboards Dashboard[]
+  semanticModels SemanticModel[]
+  metricDefinitions MetricDefinition[]
+  goals Goal[]
 }
 
 model Company {
@@ -51,6 +54,7 @@ model Company {
   sessions       Session[]
   connections    Connection[]
   dashboards     Dashboard[]
+  goals          Goal[]
 
   @@index([organizationId])
   @@unique([organizationId, name])
@@ -170,6 +174,7 @@ model Connection {
   snapshots      DataSnapshot[]
   syncRuns       SyncRun[]
   dashboards     Dashboard[]
+  semanticModels SemanticModel[]
 
   @@index([organizationId])
   @@index([organizationId, companyId])
@@ -225,7 +230,70 @@ model Dashboard {
   organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   company         Company?     @relation(fields: [companyId], references: [id], onDelete: Cascade)
   connection      Connection   @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+  goals           Goal[]
 
   @@index([organizationId])
   @@index([connectionId])
+}
+
+/// Semantic layer over a connection's snapshots (S2 BI foundation).
+model SemanticModel {
+  id             String   @id @default(cuid())
+  organizationId String
+  connectionId   String
+  name           String
+  status         String   @default("active")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  connection     Connection   @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+  metrics        MetricDefinition[]
+
+  @@unique([connectionId])
+  @@index([organizationId])
+}
+
+model MetricDefinition {
+  id              String   @id @default(cuid())
+  organizationId  String
+  semanticModelId String
+  key             String
+  label           String
+  description     String?
+  /// Path into snapshot payload, e.g. metrics.ventas_dia or rows.*.unidades
+  sourcePath      String
+  aggregation     String   @default("latest")
+  unit            String?
+  format          String   @default("number")
+  sortOrder       Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  organization    Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  semanticModel   SemanticModel @relation(fields: [semanticModelId], references: [id], onDelete: Cascade)
+
+  @@unique([semanticModelId, key])
+  @@index([organizationId])
+}
+
+/// Target for a metric key, evaluated against latest snapshot KPIs.
+model Goal {
+  id             String   @id @default(cuid())
+  organizationId String
+  companyId      String?
+  dashboardId    String?
+  metricKey      String
+  name           String
+  targetValue    Float
+  /// gte = actual >= target is success; lte = actual <= target is success
+  comparator     String   @default("gte")
+  status         String   @default("active")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  company        Company?     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  dashboard      Dashboard?   @relation(fields: [dashboardId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@index([dashboardId])
+  @@index([metricKey])
 }

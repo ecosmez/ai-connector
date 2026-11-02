@@ -149,7 +149,8 @@ main {
   color: var(--muted);
 }
 
-.form input {
+.form input,
+.form select {
   border-radius: 10px;
   border: 1px solid var(--line);
   background: var(--bg-elevated);
@@ -202,6 +203,77 @@ main {
 
 .metric-list li span {
   color: var(--muted);
+}
+
+.section-title {
+  margin: 20px 0 8px;
+  font-size: 0.85rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.goal-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 14px;
+}
+
+.goal-list li {
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+}
+
+.goal-list p {
+  margin: 6px 0 10px;
+}
+
+.goal-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: baseline;
+}
+
+.goal-status {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.goal-on_track {
+  color: var(--ok);
+}
+
+.goal-off_track {
+  color: #d97706;
+}
+
+.goal-no_data {
+  color: var(--muted);
+}
+
+.goal-bar {
+  height: 6px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--line) 80%, transparent);
+  overflow: hidden;
+}
+
+.goal-bar-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent);
+  transition: width 420ms ease;
+}
+
+.goal-bar-fill.goal-on_track {
+  background: var(--ok);
+}
+
+.goal-bar-fill.goal-off_track {
+  background: #d97706;
 }
 
 @keyframes rise-in {

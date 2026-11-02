@@ -5,6 +5,7 @@ import {
 } from "@ai-connector/shared";
 import { PrismaClient } from "@prisma/client";
 import * as bcrypt from "bcryptjs";
+import { MOCK_METRIC_BOOTSTRAP } from "../src/semantic/kpi-resolve";
 
 const prisma = new PrismaClient();
 
@@ -221,6 +222,68 @@ async function main() {
     update: { name: "Panel de frescura" },
   });
 
+  const semanticModel = await prisma.semanticModel.upsert({
+    where: { connectionId: connection.id },
+    create: {
+      id: "seed_semantic_a1",
+      organizationId: orgA.id,
+      connectionId: connection.id,
+      name: "Modelo · Conector de prueba — Norte",
+      status: "active",
+    },
+    update: { name: "Modelo · Conector de prueba — Norte", status: "active" },
+  });
+
+  for (const metric of MOCK_METRIC_BOOTSTRAP) {
+    await prisma.metricDefinition.upsert({
+      where: {
+        semanticModelId_key: {
+          semanticModelId: semanticModel.id,
+          key: metric.key,
+        },
+      },
+      create: {
+        organizationId: orgA.id,
+        semanticModelId: semanticModel.id,
+        key: metric.key,
+        label: metric.label,
+        sourcePath: metric.sourcePath,
+        aggregation: metric.aggregation ?? "latest",
+        unit: metric.unit,
+        format: metric.format,
+        sortOrder: metric.sortOrder,
+      },
+      update: {
+        label: metric.label,
+        sourcePath: metric.sourcePath,
+        aggregation: metric.aggregation ?? "latest",
+        unit: metric.unit,
+        format: metric.format,
+        sortOrder: metric.sortOrder,
+      },
+    });
+  }
+
+  await prisma.goal.upsert({
+    where: { id: "seed_goal_ventas_a1" },
+    create: {
+      id: "seed_goal_ventas_a1",
+      organizationId: orgA.id,
+      companyId: companyA1.id,
+      dashboardId: "seed_dashboard_a1",
+      metricKey: "ventas_dia",
+      name: "Meta de ventas diarias",
+      targetValue: 15,
+      comparator: "gte",
+      status: "active",
+    },
+    update: {
+      name: "Meta de ventas diarias",
+      targetValue: 15,
+      status: "active",
+    },
+  });
+
   await prisma.$executeRaw`SELECT set_config('app.current_org_id', '', false)`;
 
   console.log("Seed complete:", {
@@ -229,6 +292,7 @@ async function main() {
     orgs: [orgA.name, orgB.name],
     companies: [companyA1.name, companyA2.name],
     connection: connection.name,
+    semanticModel: semanticModel.name,
   });
 }
 

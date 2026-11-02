@@ -1,4 +1,4 @@
-# API contracts — S0 + S1
+# API contracts — S0 + S1 + S2
 
 Base URL: `http://localhost:3001`  
 Auth: `Authorization: Bearer <sessionToken>`  
@@ -35,17 +35,31 @@ Errors: `{ "statusCode": number, "code": string, "message": string }`
 | Method | Path | Permission | Notes |
 |---|---|---|---|
 | GET | `/organizations/:orgId/connections` | `connection:manage` | Lists mock connectors in scope |
-| POST | `/organizations/:orgId/connections` | `connection:manage` | Creates mock connector + default dashboard; schedules daily 00:00 TZ sync |
+| POST | `/organizations/:orgId/connections` | `connection:manage` | Creates mock connector + dashboard + semantic model + default goal; schedules daily 00:00 TZ sync |
 | GET | `/organizations/:orgId/connections/:id` | `connection:manage` | |
 | POST | `/organizations/:orgId/connections/:id/sync` | `connection:manage` | Header `Idempotency-Key` optional; replays same run when key repeats |
 | GET | `/organizations/:orgId/sync-runs` | `connection:manage` | Optional `?connectionId=` |
 | GET | `/organizations/:orgId/sync-runs/:id` | `connection:manage` | |
 
-## Dashboards (S1)
+## Semantic model (S2)
 
 | Method | Path | Permission | Notes |
 |---|---|---|---|
-| GET | `/organizations/:orgId/dashboards` | `dashboard:read` | Includes freshness + latest snapshot payload |
+| GET | `/organizations/:orgId/connections/:id/semantic-model` | `semantic:read` | Model + metric definitions |
+| POST | `/organizations/:orgId/connections/:id/semantic-model` | `semantic:manage` | Ensure/bootstrap mock model if missing |
+
+## Goals (S2)
+
+| Method | Path | Permission | Notes |
+|---|---|---|---|
+| GET | `/organizations/:orgId/goals` | `goal:read` | Optional `?dashboardId=` |
+| POST | `/organizations/:orgId/goals` | `goal:manage` | Body: name, metricKey, targetValue, comparator?, dashboardId? |
+
+## Dashboards (S1 + S2)
+
+| Method | Path | Permission | Notes |
+|---|---|---|---|
+| GET | `/organizations/:orgId/dashboards` | `dashboard:read` | Freshness + `kpis` + `goals` + snapshot |
 | GET | `/organizations/:orgId/dashboards/:id` | `dashboard:read` | Sends `ETag`; `If-None-Match` → 304 |
 
 ## Health

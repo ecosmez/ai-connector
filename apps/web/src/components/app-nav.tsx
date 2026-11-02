@@ -5,6 +5,7 @@ export function AppNav({ current }: { current: string }) {
     { href: "/app", label: "Inicio" },
     { href: "/app/conexiones", label: "Conexiones" },
     { href: "/app/dashboard", label: "Análisis" },
+    { href: "/app/metas", label: "Metas" },
   ];
 
   return (

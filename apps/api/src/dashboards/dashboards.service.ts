@@ -1,8 +1,10 @@
 import { HttpStatus, Injectable } from "@nestjs/common";
 import { PERMISSIONS } from "@ai-connector/shared";
 import { ApiException } from "../common/errors";
+import { GoalsService } from "../goals/goals.service";
 import { PolicyService } from "../policy/policy.service";
 import { PrismaService } from "../prisma/prisma.service";
+import { SemanticService } from "../semantic/semantic.service";
 import { computeFreshness, freshnessLabelEs } from "./freshness";
 
 export type DashboardView = {
@@ -29,6 +31,29 @@ export type DashboardView = {
     provider: string;
     status: string;
   };
+  semanticModelId: string | null;
+  kpis: Array<{
+    key: string;
+    label: string;
+    value: number | null;
+    unit: string | null;
+    format: string;
+    sourcePath: string;
+  }>;
+  goals: Array<{
+    id: string;
+    name: string;
+    metricKey: string;
+    metricLabel: string;
+    targetValue: number;
+    actualValue: number | null;
+    unit: string | null;
+    comparator: string;
+    status: string;
+    statusLabel: string;
+    progressPercent: number | null;
+    dashboardId: string | null;
+  }>;
 };
 
 @Injectable()
@@ -36,6 +61,8 @@ export class DashboardsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly policyService: PolicyService,
+    private readonly semanticService: SemanticService,
+    private readonly goalsService: GoalsService,
   ) {}
 
   async listDashboards(
@@ -117,7 +144,21 @@ export class DashboardsService {
           where: { connectionId: dashboard.connectionId, organizationId },
           orderBy: { version: "desc" },
         });
-        return { dashboard, snapshot };
+        const semanticModel = await tx.semanticModel.findFirst({
+          where: {
+            organizationId,
+            connectionId: dashboard.connectionId,
+          },
+        });
+        const goals = await tx.goal.findMany({
+          where: {
+            organizationId,
+            status: "active",
+            OR: [{ dashboardId }, { dashboardId: null }],
+          },
+          orderBy: { createdAt: "asc" },
+        });
+        return { dashboard, snapshot, semanticModel, goals };
       },
     );
 
@@ -129,11 +170,21 @@ export class DashboardsService {
       );
     }
 
-    const { dashboard, snapshot } = data;
+    const { dashboard, snapshot, semanticModel, goals } = data;
     const freshness = computeFreshness(
       dashboard.connection.lastSyncedAt,
       dashboard.staleAfterHours,
     );
+
+    const kpis = snapshot
+      ? await this.semanticService.resolveKpisForConnection(
+          organizationId,
+          dashboard.connectionId,
+          snapshot.payload,
+        )
+      : [];
+
+    const goalViews = this.goalsService.evaluateAgainstKpis(goals, kpis);
 
     return {
       id: dashboard.id,
@@ -161,6 +212,9 @@ export class DashboardsService {
         provider: dashboard.connection.provider,
         status: dashboard.connection.status,
       },
+      semanticModelId: semanticModel?.id ?? null,
+      kpis,
+      goals: goalViews,
     };
   }
 }
