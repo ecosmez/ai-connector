@@ -30,17 +30,17 @@ export default function HomePage() {
 
       <div className="panel">
         <section>
-          <h2>Conector de prueba</h2>
+          <h2>Sync + frescura</h2>
           <p>
-            Crea una conexión mock, lanza sync manual o espera la corrida diaria
-            a las 00:00 en la zona de tu organización.
+            Conector mock, sync manual o diario a las 00:00 (zona org) y panel
+            con estado fresco u obsoleto.
           </p>
         </section>
         <section>
-          <h2>Dashboard con frescura</h2>
+          <h2>Modelo semántico y metas</h2>
           <p>
-            Un panel persistente muestra métricas del último snapshot y si los
-            datos están frescos u obsoletos.
+            KPIs resueltos desde el snapshot y objetivos con progreso en
+            Análisis.
           </p>
         </section>
       </div>

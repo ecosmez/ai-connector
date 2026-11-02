@@ -4,8 +4,8 @@ SaaS multi-tenant de inteligencia de negocios y automatización (Fase 1 en const
 
 ## Estado
 
-**S1** — conector mock, sync (manual + 00:00 zona org vía BullMQ), snapshots versionados, dashboard con frescura.  
-S0 (identidad, tenancy, RBAC, auditoría, RLS) ya fusionado.
+**S2** — modelo semántico, KPIs desde snapshots, metas con progreso en Análisis.  
+S0–S1 (identidad, sync mock, frescura) ya fusionados.
 
 Decisiones aceptadas: ver `docs/adr/`.
 

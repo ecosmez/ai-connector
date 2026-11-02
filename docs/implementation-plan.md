@@ -18,8 +18,9 @@ Still open: D7 cloud/region, D10 retention minima, D11 DR targets (do not claim 
 | Slice | Status |
 |---|---|
 | S0 Foundation | Done (PR #1) |
-| S1 Mock connector → sync → dashboard | In progress (this PR) |
-| S2–S8 | Not started |
+| S1 Mock connector → sync → dashboard | Done (PR #2) |
+| S2 Semantic model + KPIs + goals | In progress (this PR) |
+| S3–S8 | Not started (S3 = AI wizard) |
 
 ## S0 exit criteria
 
@@ -39,3 +40,13 @@ Still open: D7 cloud/region, D10 retention minima, D11 DR targets (do not claim 
 - [x] Persistent dashboard with freshness (`fresh` / `stale` / `never`) + ETag
 - [x] RLS + cross-tenant denial tests for new tables
 - [x] Spanish UI: Conexiones + Dashboard
+
+## S2 exit criteria
+
+- [x] `SemanticModel` + `MetricDefinition` with RLS
+- [x] Auto-bootstrap mock metrics on connection create
+- [x] KPI resolution from snapshot (`metrics.*`, `rows.*.field` aggregations)
+- [x] `Goal` CRUD + evaluation (En meta / Fuera de meta / Sin dato)
+- [x] Dashboard payload includes `kpis` + `goals`
+- [x] Spanish UI: Análisis KPIs/metas + página Metas
+- [x] Isolation tests for semantic/goals

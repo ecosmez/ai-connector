@@ -4,6 +4,7 @@ import { ApiException } from "../common/errors";
 import { AuditService } from "../audit/audit.service";
 import { PolicyService } from "../policy/policy.service";
 import { PrismaService } from "../prisma/prisma.service";
+import { SemanticService } from "../semantic/semantic.service";
 import { SyncService } from "../sync/sync.service";
 
 @Injectable()
@@ -13,6 +14,7 @@ export class ConnectorsService {
     private readonly policyService: PolicyService,
     private readonly auditService: AuditService,
     private readonly syncService: SyncService,
+    private readonly semanticService: SemanticService,
   ) {}
 
   async listConnections(
@@ -157,7 +159,27 @@ export class ConnectorsService {
           },
         });
 
-        return { connection, dashboard, timezone };
+        const semanticModel = await this.semanticService.bootstrapMockModel(
+          tx,
+          organizationId,
+          connection.id,
+          connection.name,
+        );
+
+        await tx.goal.create({
+          data: {
+            organizationId,
+            companyId: companyId ?? null,
+            dashboardId: dashboard.id,
+            metricKey: "ventas_dia",
+            name: "Meta de ventas diarias",
+            targetValue: 15,
+            comparator: "gte",
+            status: "active",
+          },
+        });
+
+        return { connection, dashboard, semanticModel, timezone };
       },
     );
 
@@ -177,12 +199,14 @@ export class ConnectorsService {
         name: result.connection.name,
         provider: result.connection.provider,
         dashboardId: result.dashboard.id,
+        semanticModelId: result.semanticModel.id,
       },
     });
 
     return {
       ...result.connection,
       dashboardId: result.dashboard.id,
+      semanticModelId: result.semanticModel.id,
     };
   }
 }

@@ -4,6 +4,26 @@ import { useCallback, useEffect, useState } from "react";
 import { AppNav } from "@/components/app-nav";
 import { MeResponse, apiRequest, readToken } from "@/lib/api";
 
+type Kpi = {
+  key: string;
+  label: string;
+  value: number | null;
+  unit: string | null;
+  format: string;
+};
+
+type GoalView = {
+  id: string;
+  name: string;
+  metricLabel: string;
+  targetValue: number;
+  actualValue: number | null;
+  unit: string | null;
+  status: string;
+  statusLabel: string;
+  progressPercent: number | null;
+};
+
 type DashboardView = {
   id: string;
   name: string;
@@ -11,19 +31,25 @@ type DashboardView = {
   freshnessLabel: string;
   lastSyncedAt: string | null;
   connection: { name: string; provider: string };
-  snapshot: {
-    version: number;
-    rowCount: number;
-    payload: {
-      metrics?: Array<{
-        key: string;
-        label: string;
-        value: number;
-        unit?: string;
-      }>;
-    };
-  } | null;
+  semanticModelId: string | null;
+  kpis: Kpi[];
+  goals: GoalView[];
+  snapshot: { version: number; rowCount: number } | null;
 };
+
+function formatValue(kpi: Pick<Kpi, "value" | "unit" | "format">) {
+  if (kpi.value == null) return "—";
+  const formatted =
+    kpi.format === "currency"
+      ? kpi.value.toLocaleString("es-PR", {
+          style: "currency",
+          currency: "USD",
+          maximumFractionDigits: 0,
+        })
+      : kpi.value.toLocaleString("es-PR");
+  if (kpi.format === "currency") return formatted;
+  return `${formatted}${kpi.unit ? ` ${kpi.unit}` : ""}`;
+}
 
 export default function DashboardPage() {
   const [dashboards, setDashboards] = useState<DashboardView[]>([]);
@@ -65,9 +91,9 @@ export default function DashboardPage() {
   return (
     <main>
       <AppNav current="Análisis" />
-      <h1 className="brand">Dashboard</h1>
+      <h1 className="brand">Análisis</h1>
       <p className="lead">
-        Panel persistente de frescura de datos
+        KPIs del modelo semántico, metas y frescura de datos
         {orgName ? ` · ${orgName}` : ""}.
       </p>
 
@@ -78,8 +104,8 @@ export default function DashboardPage() {
           <section>
             <h2>Sin paneles</h2>
             <p>
-              Crea un conector en Conexiones; se genera automáticamente un panel
-              de frescura.
+              Crea un conector en Conexiones; se generan el modelo semántico, el
+              panel y una meta inicial.
             </p>
           </section>
         )}
@@ -88,6 +114,7 @@ export default function DashboardPage() {
             <h2>{d.name}</h2>
             <p>
               Conexión: {d.connection.name} ({d.connection.provider})
+              {d.semanticModelId ? " · modelo semántico activo" : ""}
             </p>
             <p className={`freshness-badge freshness-${d.freshness}`}>
               {d.freshnessLabel}
@@ -98,19 +125,60 @@ export default function DashboardPage() {
                 ? new Date(d.lastSyncedAt).toLocaleString("es-PR")
                 : "—"}
             </p>
-            {d.snapshot?.payload?.metrics && (
-              <ul className="metric-list">
-                {d.snapshot.payload.metrics.map((m) => (
-                  <li key={m.key}>
-                    <strong>{m.label}</strong>
-                    <span>
-                      {m.value.toLocaleString("es-PR")}
-                      {m.unit ? ` ${m.unit}` : ""}
-                    </span>
-                  </li>
-                ))}
-              </ul>
+
+            {d.kpis.length > 0 && (
+              <>
+                <h3 className="section-title">KPIs</h3>
+                <ul className="metric-list">
+                  {d.kpis.map((m) => (
+                    <li key={m.key}>
+                      <strong>{m.label}</strong>
+                      <span>{formatValue(m)}</span>
+                    </li>
+                  ))}
+                </ul>
+              </>
             )}
+
+            {d.goals.length > 0 && (
+              <>
+                <h3 className="section-title">Metas</h3>
+                <ul className="goal-list">
+                  {d.goals.map((g) => (
+                    <li key={g.id}>
+                      <div className="goal-head">
+                        <strong>{g.name}</strong>
+                        <span className={`goal-status goal-${g.status}`}>
+                          {g.statusLabel}
+                        </span>
+                      </div>
+                      <p>
+                        {g.metricLabel}:{" "}
+                        {formatValue({
+                          value: g.actualValue,
+                          unit: g.unit,
+                          format: "number",
+                        })}{" "}
+                        / meta {g.targetValue.toLocaleString("es-PR")}
+                        {g.unit ? ` ${g.unit}` : ""}
+                      </p>
+                      <div
+                        className="goal-bar"
+                        aria-hidden={g.progressPercent == null}
+                      >
+                        <div
+                          className={`goal-bar-fill goal-${g.status}`}
+                          style={{
+                            width: `${Math.max(0, Math.min(100, g.progressPercent ?? 0))}%`,
+                          }}
+                        />
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+
             {d.snapshot && (
               <p className="status">
                 Snapshot v{d.snapshot.version} · {d.snapshot.rowCount} filas
