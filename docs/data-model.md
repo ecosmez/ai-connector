@@ -1,4 +1,4 @@
-# Data model — S0–S5
+# Data model — S0–S6
 
 See also product spec §10. Table names below match Prisma models.
 
@@ -66,6 +66,13 @@ See also product spec §10. Table names below match Prisma models.
 |---|---|---|
 | `Notification` | org (+ optional recipient user) | In-app inbox from `notify` steps |
 
+## Entities (S6)
+
+| Model | Scope | Purpose |
+|---|---|---|
+| `UserMfaFactor` | user | Encrypted TOTP secret + `enabledAt` |
+| `MfaChallenge` | user | Short-lived login step-up token (hashed) |
+
 ## Later (not migrated yet)
 
-Cross-company workflow graphs, Temporal migration criteria, full BI editor, platform console. AI tools remain read-only for mutations.
+SSO IdP bindings, SCIM, cross-company workflow graphs, Temporal, full BI editor, platform console. AI tools remain read-only for mutations.

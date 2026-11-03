@@ -31,6 +31,8 @@ export async function resetDatabase(prisma: PrismaService) {
   // Order matters for FKs; truncate all tenant tables.
   await prisma.$executeRawUnsafe(`
     TRUNCATE TABLE
+      "MfaChallenge",
+      "UserMfaFactor",
       "Notification",
       "ApprovalRequest",
       "WorkflowStepRun",

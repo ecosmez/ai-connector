@@ -24,6 +24,34 @@ model User {
   approvalsRequested ApprovalRequest[] @relation("ApprovalRequester")
   approvalsDecided   ApprovalRequest[] @relation("ApprovalDecider")
   notifications      Notification[]
+  mfaFactor          UserMfaFactor?
+  mfaChallenges      MfaChallenge[]
+}
+
+/// TOTP factor for local auth step-up (S6). User-scoped (no org RLS).
+model UserMfaFactor {
+  id              String    @id @default(cuid())
+  userId          String    @unique
+  type            String    @default("totp")
+  /// AES-GCM ciphertext of base32 secret (see mfa-crypto).
+  secretCiphertext String
+  enabledAt       DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+/// Short-lived login MFA challenge (opaque token hashed at rest).
+model MfaChallenge {
+  id         String    @id @default(cuid())
+  userId     String
+  tokenHash  String    @unique
+  expiresAt  DateTime
+  consumedAt DateTime?
+  createdAt  DateTime  @default(now())
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model Organization {

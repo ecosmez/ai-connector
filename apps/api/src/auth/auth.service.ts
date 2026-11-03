@@ -4,8 +4,23 @@ import { createHash, randomBytes } from "crypto";
 import { ApiException } from "../common/errors";
 import { PrismaService } from "../prisma/prisma.service";
 import { AuthSession, AuthUser } from "./auth.types";
+import { decryptSecret, encryptSecret } from "./mfa-crypto";
+import {
+  buildOtpAuthUrl,
+  generateTotpSecret,
+  verifyTotpCode,
+} from "./totp";
 
 const SESSION_DAYS = 14;
+const MFA_CHALLENGE_MINUTES = 5;
+
+export type LoginResult =
+  | { token: string; user: AuthUser; mfaRequired?: false }
+  | {
+      mfaRequired: true;
+      mfaToken: string;
+      user: AuthUser;
+    };
 
 @Injectable()
 export class AuthService {
@@ -35,7 +50,7 @@ export class AuthService {
     return this.createSession(user.id);
   }
 
-  async login(email: string, password: string) {
+  async login(email: string, password: string): Promise<LoginResult> {
     const user = await this.prisma.user.findUnique({ where: { email } });
     if (!user) {
       throw new ApiException(
@@ -52,7 +67,199 @@ export class AuthService {
         "Credenciales inválidas",
       );
     }
-    return this.createSession(user.id);
+
+    const factor = await this.prisma.userMfaFactor.findUnique({
+      where: { userId: user.id },
+    });
+    if (factor?.enabledAt) {
+      const mfaToken = await this.createMfaChallenge(user.id);
+      return {
+        mfaRequired: true,
+        mfaToken,
+        user: this.toUser(user),
+      };
+    }
+
+    const session = await this.createSession(user.id);
+    return { ...session, mfaRequired: false };
+  }
+
+  private async createMfaChallenge(userId: string) {
+    const token = randomBytes(32).toString("hex");
+    const expiresAt = new Date();
+    expiresAt.setMinutes(expiresAt.getMinutes() + MFA_CHALLENGE_MINUTES);
+    await this.prisma.mfaChallenge.create({
+      data: {
+        userId,
+        tokenHash: this.hashToken(token),
+        expiresAt,
+      },
+    });
+    return token;
+  }
+
+  async verifyMfaLogin(mfaToken: string, code: string) {
+    const challenge = await this.prisma.mfaChallenge.findUnique({
+      where: { tokenHash: this.hashToken(mfaToken) },
+    });
+    if (
+      !challenge ||
+      challenge.consumedAt ||
+      challenge.expiresAt < new Date()
+    ) {
+      throw new ApiException(
+        HttpStatus.UNAUTHORIZED,
+        "mfa_challenge_invalid",
+        "Desafío MFA inválido o expirado",
+      );
+    }
+
+    const factor = await this.prisma.userMfaFactor.findUnique({
+      where: { userId: challenge.userId },
+    });
+    if (!factor?.enabledAt) {
+      throw new ApiException(
+        HttpStatus.UNAUTHORIZED,
+        "mfa_not_enabled",
+        "MFA no está activo",
+      );
+    }
+
+    const secret = decryptSecret(factor.secretCiphertext);
+    if (!verifyTotpCode(secret, code)) {
+      throw new ApiException(
+        HttpStatus.UNAUTHORIZED,
+        "mfa_invalid_code",
+        "Código MFA inválido",
+      );
+    }
+
+    await this.prisma.mfaChallenge.update({
+      where: { id: challenge.id },
+      data: { consumedAt: new Date() },
+    });
+
+    return this.createSession(challenge.userId);
+  }
+
+  async mfaStatus(userId: string) {
+    const factor = await this.prisma.userMfaFactor.findUnique({
+      where: { userId },
+    });
+    return {
+      enabled: Boolean(factor?.enabledAt),
+      pendingSetup: Boolean(factor && !factor.enabledAt),
+      type: factor?.type ?? null,
+    };
+  }
+
+  async setupMfa(userId: string) {
+    const user = await this.prisma.user.findUniqueOrThrow({
+      where: { id: userId },
+    });
+    const existing = await this.prisma.userMfaFactor.findUnique({
+      where: { userId },
+    });
+    if (existing?.enabledAt) {
+      throw new ApiException(
+        HttpStatus.CONFLICT,
+        "mfa_already_enabled",
+        "MFA ya está activo",
+      );
+    }
+
+    const secret = generateTotpSecret();
+    const secretCiphertext = encryptSecret(secret);
+    await this.prisma.userMfaFactor.upsert({
+      where: { userId },
+      create: {
+        userId,
+        type: "totp",
+        secretCiphertext,
+        enabledAt: null,
+      },
+      update: {
+        secretCiphertext,
+        enabledAt: null,
+        type: "totp",
+      },
+    });
+
+    return {
+      secret,
+      otpauthUrl: buildOtpAuthUrl({ secret, email: user.email }),
+    };
+  }
+
+  async enableMfa(userId: string, code: string) {
+    const factor = await this.prisma.userMfaFactor.findUnique({
+      where: { userId },
+    });
+    if (!factor) {
+      throw new ApiException(
+        HttpStatus.BAD_REQUEST,
+        "mfa_setup_required",
+        "Inicia la configuración MFA primero",
+      );
+    }
+    if (factor.enabledAt) {
+      throw new ApiException(
+        HttpStatus.CONFLICT,
+        "mfa_already_enabled",
+        "MFA ya está activo",
+      );
+    }
+    const secret = decryptSecret(factor.secretCiphertext);
+    if (!verifyTotpCode(secret, code)) {
+      throw new ApiException(
+        HttpStatus.UNAUTHORIZED,
+        "mfa_invalid_code",
+        "Código MFA inválido",
+      );
+    }
+    await this.prisma.userMfaFactor.update({
+      where: { userId },
+      data: { enabledAt: new Date() },
+    });
+    return { enabled: true };
+  }
+
+  async disableMfa(userId: string, password: string, code: string) {
+    const user = await this.prisma.user.findUniqueOrThrow({
+      where: { id: userId },
+    });
+    const ok = await bcrypt.compare(password, user.passwordHash);
+    if (!ok) {
+      throw new ApiException(
+        HttpStatus.UNAUTHORIZED,
+        "invalid_credentials",
+        "Credenciales inválidas",
+      );
+    }
+    const factor = await this.prisma.userMfaFactor.findUnique({
+      where: { userId },
+    });
+    if (!factor?.enabledAt) {
+      throw new ApiException(
+        HttpStatus.BAD_REQUEST,
+        "mfa_not_enabled",
+        "MFA no está activo",
+      );
+    }
+    const secret = decryptSecret(factor.secretCiphertext);
+    if (!verifyTotpCode(secret, code)) {
+      throw new ApiException(
+        HttpStatus.UNAUTHORIZED,
+        "mfa_invalid_code",
+        "Código MFA inválido",
+      );
+    }
+    await this.prisma.userMfaFactor.delete({ where: { userId } });
+    await this.prisma.mfaChallenge.updateMany({
+      where: { userId, consumedAt: null },
+      data: { consumedAt: new Date() },
+    });
+    return { enabled: false };
   }
 
   async createSession(userId: string): Promise<{ token: string; user: AuthUser }> {
@@ -125,6 +332,7 @@ export class AuthService {
       },
       orderBy: { createdAt: "asc" },
     });
+    const mfa = await this.mfaStatus(userId);
     return {
       user: this.toUser(user),
       memberships: memberships.map((m) => ({
@@ -134,6 +342,7 @@ export class AuthService {
         companyId: m.companyId,
         companyName: m.company?.name ?? null,
       })),
+      mfa,
     };
   }
 
