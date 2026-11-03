@@ -13,6 +13,7 @@ import { redisConnection } from "./redis";
 import { SemanticModule } from "./semantic/semantic.module";
 import { SyncModule } from "./sync/sync.module";
 import { TenancyModule } from "./tenancy/tenancy.module";
+import { WorkflowsModule } from "./workflows/workflows.module";
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { TenancyModule } from "./tenancy/tenancy.module";
     GoalsModule,
     DashboardsModule,
     AssistantModule,
+    WorkflowsModule,
   ],
   controllers: [HealthController],
 })

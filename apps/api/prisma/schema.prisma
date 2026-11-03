@@ -20,6 +20,9 @@ model User {
   auditEvents  AuditEvent[]   @relation("AuditActor")
   assistantThreads AssistantThread[]
   assistantMessages AssistantMessage[]
+  workflowRuns WorkflowRun[]
+  approvalsRequested ApprovalRequest[] @relation("ApprovalRequester")
+  approvalsDecided   ApprovalRequest[] @relation("ApprovalDecider")
 }
 
 model Organization {
@@ -43,6 +46,10 @@ model Organization {
   goals Goal[]
   assistantThreads AssistantThread[]
   assistantMessages AssistantMessage[]
+  workflowDefinitions WorkflowDefinition[]
+  workflowRuns WorkflowRun[]
+  workflowStepRuns WorkflowStepRun[]
+  approvalRequests ApprovalRequest[]
 }
 
 model Company {
@@ -59,6 +66,8 @@ model Company {
   connections    Connection[]
   dashboards     Dashboard[]
   goals          Goal[]
+  workflowDefinitions WorkflowDefinition[]
+  workflowRuns WorkflowRun[]
 
   @@index([organizationId])
   @@unique([organizationId, name])
@@ -334,4 +343,97 @@ model AssistantMessage {
 
   @@index([threadId, createdAt])
   @@index([organizationId])
+}
+
+/// Linear workflow definition (S4 in-house DAG on BullMQ).
+model WorkflowDefinition {
+  id             String   @id @default(cuid())
+  organizationId String
+  companyId      String?
+  name           String
+  description    String?
+  /// Ordered steps: [{ key, type, config }]
+  steps          Json
+  status         String   @default("active")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  company        Company?     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  runs           WorkflowRun[]
+
+  @@index([organizationId])
+  @@unique([organizationId, name])
+}
+
+model WorkflowRun {
+  id              String   @id @default(cuid())
+  organizationId  String
+  companyId       String?
+  definitionId    String
+  triggeredByUserId String?
+  status          String   @default("queued")
+  dryRun          Boolean  @default(false)
+  idempotencyKey  String?
+  currentStepKey  String?
+  context         Json     @default("{}")
+  errorMessage    String?
+  startedAt       DateTime?
+  finishedAt      DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  organization    Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  company         Company?          @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  definition      WorkflowDefinition @relation(fields: [definitionId], references: [id], onDelete: Cascade)
+  triggeredBy     User?             @relation(fields: [triggeredByUserId], references: [id], onDelete: SetNull)
+  stepRuns        WorkflowStepRun[]
+  approvals       ApprovalRequest[]
+
+  @@unique([organizationId, idempotencyKey])
+  @@index([organizationId, createdAt])
+  @@index([definitionId])
+}
+
+model WorkflowStepRun {
+  id             String   @id @default(cuid())
+  organizationId String
+  runId          String
+  stepKey        String
+  stepType       String
+  status         String   @default("pending")
+  attempt        Int      @default(0)
+  input          Json?
+  output         Json?
+  errorMessage   String?
+  startedAt      DateTime?
+  finishedAt     DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  run            WorkflowRun  @relation(fields: [runId], references: [id], onDelete: Cascade)
+  approvals      ApprovalRequest[]
+
+  @@unique([runId, stepKey])
+  @@index([organizationId])
+}
+
+model ApprovalRequest {
+  id               String   @id @default(cuid())
+  organizationId   String
+  runId            String
+  stepRunId        String
+  status           String   @default("pending")
+  requestedByUserId String?
+  decidedByUserId  String?
+  note             String?
+  decidedAt        DateTime?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  organization     Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  run              WorkflowRun    @relation(fields: [runId], references: [id], onDelete: Cascade)
+  stepRun          WorkflowStepRun @relation(fields: [stepRunId], references: [id], onDelete: Cascade)
+  requestedBy      User?          @relation("ApprovalRequester", fields: [requestedByUserId], references: [id], onDelete: SetNull)
+  decidedBy        User?          @relation("ApprovalDecider", fields: [decidedByUserId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId, status])
+  @@index([runId])
 }
