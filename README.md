@@ -4,8 +4,8 @@ SaaS multi-tenant de inteligencia de negocios y automatización (Fase 1 en const
 
 ## Estado
 
-**S2** — modelo semántico, KPIs desde snapshots, metas con progreso en Análisis.  
-S0–S1 (identidad, sync mock, frescura) ya fusionados.
+**S3** — asistente con herramientas de solo lectura (OpenAI o mock), hilos por tenant.  
+S0–S2 (identidad, sync, semántica/metas) ya fusionados.
 
 Decisiones aceptadas: ver `docs/adr/`.
 

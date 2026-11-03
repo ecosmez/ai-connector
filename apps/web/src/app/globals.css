@@ -276,6 +276,112 @@ main {
   background: #d97706;
 }
 
+.assistant-layout {
+  margin-top: 28px;
+  display: grid;
+  gap: 20px;
+  grid-template-columns: minmax(180px, 240px) 1fr;
+}
+
+@media (max-width: 800px) {
+  .assistant-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.assistant-threads {
+  display: grid;
+  gap: 12px;
+  align-content: start;
+}
+
+.assistant-threads ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.assistant-threads li button {
+  width: 100%;
+  text-align: left;
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--bg-elevated) 90%, transparent);
+  color: var(--ink);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font: inherit;
+  cursor: pointer;
+}
+
+.assistant-threads li button.active {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent-soft) 55%, var(--bg-elevated));
+}
+
+.assistant-chat {
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--bg-elevated) 88%, transparent);
+  padding: 16px;
+  display: grid;
+  gap: 16px;
+}
+
+.assistant-messages {
+  display: grid;
+  gap: 12px;
+  min-height: 220px;
+  max-height: 480px;
+  overflow: auto;
+}
+
+.bubble {
+  border-radius: 12px;
+  padding: 12px 14px;
+  animation: rise-in 320ms ease both;
+}
+
+.bubble strong {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.bubble pre {
+  margin: 0;
+  white-space: pre-wrap;
+  font: inherit;
+  line-height: 1.45;
+}
+
+.bubble-user {
+  background: color-mix(in srgb, var(--accent-soft) 45%, transparent);
+}
+
+.bubble-assistant {
+  background: color-mix(in srgb, var(--bg) 55%, var(--bg-elevated));
+  border: 1px solid var(--line);
+}
+
+.assistant-form {
+  display: grid;
+  gap: 10px;
+}
+
+.assistant-form textarea {
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--bg-elevated);
+  color: var(--ink);
+  padding: 10px 12px;
+  font: inherit;
+  resize: vertical;
+}
+
 @keyframes rise-in {
   from {
     opacity: 0;

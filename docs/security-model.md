@@ -1,4 +1,4 @@
-# Security model — S0 + S1 + S2
+# Security model — S0–S3
 
 ## Authentication
 
@@ -8,7 +8,7 @@
 
 ## Authorization
 
-- Permissions are `resource:action` strings (e.g. `organization:read`, `connection:manage`, `dashboard:read`, `semantic:manage`, `goal:manage`).
+- Permissions are `resource:action` strings (e.g. `organization:read`, `connection:manage`, `dashboard:read`, `semantic:manage`, `goal:manage`, `assistant:use`).
 - Evaluation uses role bindings in the active org (and company when binding is company-scoped).
 - Company admins cannot escalate to other companies.
 - Platform superadmin role does **not** auto-grant private tenant data (support access later, consented + audited).
@@ -16,9 +16,16 @@
 ## Isolation
 
 - Application policy checks on every mutating/query route.
-- PostgreSQL RLS on tenant-owned tables as defense in depth (including `Connection`, `DataSnapshot`, `SyncRun`, `Dashboard`, `SemanticModel`, `MetricDefinition`, `Goal`).
+- PostgreSQL RLS on tenant-owned tables as defense in depth (including `Connection`, `DataSnapshot`, `SyncRun`, `Dashboard`, `SemanticModel`, `MetricDefinition`, `Goal`, `AssistantThread`, `AssistantMessage`).
 - App DB role must be **NOSUPERUSER** and **NOBYPASSRLS** (superusers bypass FORCE RLS).
 - Negative tests: cross-org IDOR must return 403/404.
+
+## Assistant (S3)
+
+- Central provider only (no customer BYOK); mock mode for local/CI without keys.
+- Tool allowlist is read-only; schema-validated args; tenant-scoped execution.
+- User prompts sanitized and wrapped as untrusted; system prompt rejects override attempts.
+- Audit stores tool names / round counts — never API keys or full model system prompts.
 
 ## Sync / idempotency
 

@@ -37,10 +37,10 @@ export default function HomePage() {
           </p>
         </section>
         <section>
-          <h2>Modelo semántico y metas</h2>
+          <h2>Asistente con herramientas</h2>
           <p>
-            KPIs resueltos desde el snapshot y objetivos con progreso en
-            Análisis.
+            Pregunta en español por KPIs y metas; el asistente solo lee datos de
+            tu organización (mock u OpenAI).
           </p>
         </section>
       </div>
