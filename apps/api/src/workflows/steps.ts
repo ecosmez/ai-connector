@@ -27,21 +27,65 @@ export async function executeStep(input: {
     case "check_goal":
       return runCheckGoal(input);
     case "notify":
-      return {
-        status: "succeeded",
-        output: {
-          channel: String(step.config?.channel ?? "audit"),
-          message: String(
-            step.config?.message ?? "Notificación de automatización",
-          ),
-          simulated: dryRun,
-        },
-      };
+      return runNotify(input);
     case "wait_approval":
       return runWaitApproval(input);
     default:
       return { status: "failed", error: `unknown_step_type:${step.type}` };
   }
+}
+
+async function runNotify(input: {
+  prisma: PrismaService;
+  organizationId: string;
+  runId: string;
+  step: WorkflowStepDef;
+  dryRun: boolean;
+  context: Record<string, unknown>;
+}): Promise<StepResult> {
+  const channel = String(input.step.config?.channel ?? "in_app");
+  const message = String(
+    input.step.config?.message ?? "Notificación de automatización",
+  );
+  const title = String(
+    input.step.config?.title ??
+      (typeof input.context.workflowName === "string"
+        ? input.context.workflowName
+        : "Automatización"),
+  );
+
+  if (input.dryRun || channel === "audit") {
+    return {
+      status: "succeeded",
+      output: { channel, message, title, simulated: true },
+    };
+  }
+
+  const notification = await input.prisma.withOrganizationContext(
+    input.organizationId,
+    (tx) =>
+      tx.notification.create({
+        data: {
+          organizationId: input.organizationId,
+          title,
+          body: message,
+          channel: "in_app",
+          sourceType: "workflow_run",
+          sourceId: input.runId,
+        },
+      }),
+  );
+
+  return {
+    status: "succeeded",
+    output: {
+      channel: "in_app",
+      message,
+      title,
+      simulated: false,
+      notificationId: notification.id,
+    },
+  };
 }
 
 async function runCheckGoal(input: {

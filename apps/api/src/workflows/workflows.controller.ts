@@ -15,6 +15,7 @@ import {
   CreateWorkflowDto,
   DecideApprovalDto,
   StartWorkflowRunDto,
+  UpdateWorkflowScheduleDto,
 } from "./dto";
 import { WorkflowsService } from "./workflows.service";
 
@@ -43,6 +44,25 @@ export class WorkflowsController {
       auth.user.id,
       orgId,
       auth.session.activeCompanyId,
+    );
+  }
+
+  @Post("organizations/:orgId/workflows/:workflowId/schedule")
+  updateSchedule(
+    @CurrentAuth() auth: RequestAuth,
+    @Param("orgId") orgId: string,
+    @Param("workflowId") workflowId: string,
+    @Body() body: UpdateWorkflowScheduleDto,
+  ) {
+    return this.workflowsService.updateSchedule(
+      auth.user.id,
+      orgId,
+      workflowId,
+      {
+        enabled: body.enabled,
+        cron: body.cron,
+        timezone: body.timezone,
+      },
     );
   }
 
