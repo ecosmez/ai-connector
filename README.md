@@ -4,8 +4,8 @@ SaaS multi-tenant de inteligencia de negocios y automatización (Fase 1 en const
 
 ## Estado
 
-**S5** — centro de notificaciones in-app + programación de automatizaciones.  
-S0–S4: foundation → sync → KPIs/metas → asistente → workflows.
+**S6** — MFA TOTP (login step-up) per ADR 0007; SSO/SCIM diferidos.  
+S0–S5: foundation → sync → KPIs → asistente → workflows → notificaciones.
 
 Decisiones aceptadas: ver `docs/adr/`.
 

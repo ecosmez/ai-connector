@@ -1,18 +1,18 @@
 # Architecture — AI Connector
 
 **Status:** Living document for Fase 1 construction  
-**Stack ADRs:** [0001](adr/0001-application-stack.md) · [0002](adr/0002-database-and-analytics.md) · [0003](adr/0003-queue-and-workflow-engine.md) · [0004](adr/0004-llm-provider.md) · [0005](adr/0005-locale-and-sync-timezone.md)
+**Stack ADRs:** [0001](adr/0001-application-stack.md) · [0002](adr/0002-database-and-analytics.md) · [0003](adr/0003-queue-and-workflow-engine.md) · [0004](adr/0004-llm-provider.md) · [0005](adr/0005-locale-and-sync-timezone.md) · [0006](adr/0006-workflow-engine.md) · [0007](adr/0007-mfa-and-enterprise-identity.md)
 
-## Current shape (S5)
+## Current shape (S6)
 
 Modular monolith:
 
 | Process | Path | Role |
 |---|---|---|
-| Web | `apps/web` | Next.js UI (Spanish-first + automatizaciones + notificaciones) |
-| API | `apps/api` | NestJS modules through assistant + workflows + notifications |
+| Web | `apps/web` | Next.js UI (Spanish-first + seguridad MFA) |
+| API | `apps/api` | NestJS modules through assistant + workflows + notifications + MFA |
 | Shared | `packages/shared` | DTOs, permission constants, error codes |
-| Postgres | docker-compose / local | OLTP + snapshots + semantic + assistant + workflows + notifications |
+| Postgres | docker-compose / local | OLTP + snapshots + semantic + assistant + workflows + notifications + MFA |
 | Redis | docker-compose / local | BullMQ sync + workflow queues (incl. schedules) |
 
 ## Domain modules (API)
@@ -29,8 +29,9 @@ Modular monolith:
 - `assistant` — LLM orchestrator (OpenAI/mock), tool allowlist, sanitization
 - `workflows` — in-house linear DAG (BullMQ), dry-run, approvals, schedules ([ADR 0006](adr/0006-workflow-engine.md))
 - `notifications` — in-app inbox fed by workflow `notify` steps
+- `auth` MFA — TOTP enroll + login step-up ([ADR 0007](adr/0007-mfa-and-enterprise-identity.md))
 
-Deferred: real ERP/CRM connectors, full BI editor, Temporal, platform console, SSO (S6).
+Deferred: real ERP/CRM connectors, full BI editor, Temporal, platform console, SSO/SCIM.
 
 ## Request path (tenant safety)
 
@@ -74,6 +75,13 @@ Deferred: real ERP/CRM connectors, full BI editor, Temporal, platform console, S
 3. Scheduled ticks create non-dry-run runs with `context.trigger=schedule`.
 4. Spanish UI `/app/notificaciones` lists/marks read; Automatizaciones toggles schedule.
 
+## MFA path (S6)
+
+1. Authenticated `POST /auth/mfa/setup` → encrypted pending factor + otpauth URL.
+2. `POST /auth/mfa/enable` with TOTP code → `enabledAt`.
+3. Login with MFA enabled → `{ mfaRequired, mfaToken }` → `POST /auth/mfa/verify` → session.
+4. Spanish UI `/app/seguridad` + login MFA step.
+
 ## Non-goals in this codebase stage
 
-- Full BI editor drag/drop, write-capable AI tools / auto-automations, Temporal cluster, SSO/SCIM/MFA UI, multi-region DR claims.
+- Full BI editor drag/drop, write-capable AI tools / auto-automations, Temporal cluster, SSO/SCIM UI, multi-region DR claims.

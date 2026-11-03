@@ -1,4 +1,4 @@
-# API contracts — S0–S5
+# API contracts — S0–S6
 
 Base URL: `http://localhost:3001`  
 Auth: `Authorization: Bearer <sessionToken>`  
@@ -9,9 +9,15 @@ Errors: `{ "statusCode": number, "code": string, "message": string }`
 | Method | Path | Notes |
 |---|---|---|
 | POST | `/auth/register` | Bootstrap user (dev/S0); body: email, password, name |
-| POST | `/auth/login` | Returns `{ token, user }` |
+| POST | `/auth/login` | `{ token, user }` or `{ mfaRequired: true, mfaToken, user }` when MFA enabled |
+| POST | `/auth/mfa/verify` | Body `{ mfaToken, code }` → session token |
+| GET | `/auth/mfa` | Authenticated; `{ enabled, pendingSetup, type }` |
+| POST | `/auth/mfa/setup` | Authenticated; returns `{ secret, otpauthUrl }` (pending enable) |
+| POST | `/auth/mfa/enable` | Authenticated; body `{ code }` |
+| POST | `/auth/mfa/disable` | Authenticated; body `{ password, code }` |
 | POST | `/auth/logout` | Revokes session |
-| GET | `/auth/me` | Current user + memberships |
+| GET | `/auth/me` | Current user + memberships + `mfa` status |
+
 
 ## Tenancy
 

@@ -1,10 +1,11 @@
-# Security model — S0–S5
+# Security model — S0–S6
 
 ## Authentication
 
 - Local email/password (bcrypt).
 - Opaque session tokens hashed at rest; bearer token to API.
 - Session carries `userId`, `activeOrganizationId`, optional `activeCompanyId`.
+- **S6 MFA (TOTP):** when enabled, login returns `mfaRequired` + short-lived `mfaToken`; session issued only after `/auth/mfa/verify`. TOTP secrets encrypted at rest (`MFA_ENCRYPTION_KEY`).
 
 ## Authorization
 
@@ -51,6 +52,11 @@
 - No password hashes, tokens, or secrets in `metadata`.
 - S0 does not yet implement hash-chain/WORM; planned before enterprise audit export.
 
-## Deferred to S6
+## MFA (S6)
 
-SSO (Entra, Google Workspace), SCIM, MFA/step-up, IP/geo policies, device inventory UI.
+- See [ADR 0007](adr/0007-mfa-and-enterprise-identity.md).
+- Audit: `user.mfa_enabled`, `user.mfa_disabled`, `user.login_mfa`, `user.login_mfa_challenge` — never codes/secrets.
+
+## Deferred (post-S6)
+
+SSO (Entra, Google Workspace), SCIM, IP/geo policies, device inventory UI, org-wide “require MFA” policy.
