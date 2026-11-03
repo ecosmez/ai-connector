@@ -1,4 +1,4 @@
-# Data model — S0–S3
+# Data model — S0–S4
 
 See also product spec §10. Table names below match Prisma models.
 
@@ -51,6 +51,15 @@ See also product spec §10. Table names below match Prisma models.
 | `AssistantThread` | org + user | Conversation container |
 | `AssistantMessage` | org + thread | `user` / `assistant` / `tool` messages; optional `toolPayload` |
 
+## Entities (S4)
+
+| Model | Scope | Purpose |
+|---|---|---|
+| `WorkflowDefinition` | org (+ optional company) | Named linear step graph (JSON) |
+| `WorkflowRun` | org + definition | Execution; `dryRun`, optional `idempotencyKey` |
+| `WorkflowStepRun` | org + run | Per-step status/output |
+| `ApprovalRequest` | org + run/step | Human gate for `wait_approval` |
+
 ## Later (not migrated yet)
 
-Workflows, approvals — per spec §10. Full BI editor deferred. AI tools remain read-only until confirmed write actions land.
+Cross-company workflow graphs, Temporal migration criteria, full BI editor. AI tools remain read-only for mutations.

@@ -1,4 +1,4 @@
-# API contracts — S0–S3
+# API contracts — S0–S4
 
 Base URL: `http://localhost:3001`  
 Auth: `Authorization: Bearer <sessionToken>`  
@@ -73,6 +73,18 @@ Errors: `{ "statusCode": number, "code": string, "message": string }`
 | POST | `/organizations/:orgId/assistant/threads/:id/messages` | `assistant:use` | User turn → tool loop → assistant reply |
 
 Allowlisted tools (read-only): `list_dashboards`, `get_dashboard_overview`, `list_goals`, `list_semantic_metrics`.
+
+## Workflows (S4)
+
+| Method | Path | Permission | Notes |
+|---|---|---|---|
+| POST | `/organizations/:orgId/workflows` | `workflow:manage` | Body: name, description?, steps[] (`check_goal`\|`notify`\|`wait_approval`) |
+| GET | `/organizations/:orgId/workflows` | `workflow:manage` | |
+| POST | `/organizations/:orgId/workflows/:id/runs` | `workflow:manage` | `dryRun?`; header `Idempotency-Key` |
+| GET | `/organizations/:orgId/workflow-runs` | `workflow:manage` | |
+| GET | `/organizations/:orgId/workflow-runs/:id` | `workflow:manage` | Includes stepRuns + approvals |
+| GET | `/organizations/:orgId/approvals` | `workflow:manage` | `?status=pending` |
+| POST | `/organizations/:orgId/approvals/:id/decide` | `workflow:manage` | `{ decision: approved\|rejected, note? }` |
 
 ## Health
 

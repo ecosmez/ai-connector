@@ -284,6 +284,44 @@ async function main() {
     },
   });
 
+  await prisma.workflowDefinition.upsert({
+    where: {
+      organizationId_name: {
+        organizationId: orgA.id,
+        name: "Alerta de ventas",
+      },
+    },
+    create: {
+      id: "seed_workflow_ventas_a1",
+      organizationId: orgA.id,
+      companyId: companyA1.id,
+      name: "Alerta de ventas",
+      description: "check_goal → notify → wait_approval",
+      status: "active",
+      steps: [
+        {
+          key: "check_ventas",
+          type: "check_goal",
+          config: { metricKey: "ventas_dia", requireOnTrack: true },
+        },
+        {
+          key: "notify_ops",
+          type: "notify",
+          config: { message: "Meta de ventas en curso" },
+        },
+        {
+          key: "approve_close",
+          type: "wait_approval",
+          config: { prompt: "¿Cerrar el ciclo?" },
+        },
+      ],
+    },
+    update: {
+      description: "check_goal → notify → wait_approval",
+      status: "active",
+    },
+  });
+
   await prisma.$executeRaw`SELECT set_config('app.current_org_id', '', false)`;
 
   console.log("Seed complete:", {

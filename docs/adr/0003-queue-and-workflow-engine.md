@@ -1,7 +1,7 @@
 # ADR 0003 — Queue and workflow engine
 
-**Status:** Accepted for queue; workflow engine deferred evaluation  
-**Decision class:** Was PENDIENTE (D4/D5); D4 accepted, D5 scheduled for S4.
+**Status:** Accepted for queue; workflow engine decided in [ADR 0006](0006-workflow-engine.md)  
+**Decision class:** Was PENDIENTE (D4/D5); D4 accepted; D5 resolved at S4.
 
 ## Context
 
@@ -9,10 +9,10 @@ Nightly sync, manual sync, and later automations need durable jobs with retries 
 
 ## Decision
 
-- **S0–S3 jobs:** Redis + BullMQ for scheduled/manual sync and background work.
-- **S4 workflow engine:** evaluate Temporal vs in-house DAG before implementing workflow core; do not lock S0 to Temporal.
+- **Jobs (D4):** Redis + BullMQ for scheduled/manual sync and background work (unchanged).
+- **Workflow engine (D5):** see **ADR 0006** — in-house BullMQ + Postgres DAG for S4; Temporal deferred.
 
 ## Consequences
 
 - `REDIS_URL` is required for workers; API can boot without a worker process in early slices.
-- Workflow ADR will be written at S4 kickoff with dry-run, idempotency, and approval requirements from the product spec.
+- Workflow dry-run, idempotency, and approval requirements are implemented in the S4 workflow module.

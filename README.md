@@ -4,8 +4,8 @@ SaaS multi-tenant de inteligencia de negocios y automatización (Fase 1 en const
 
 ## Estado
 
-**S3** — asistente con herramientas de solo lectura (OpenAI o mock), hilos por tenant.  
-S0–S2 (identidad, sync, semántica/metas) ya fusionados.
+**S4** — automatizaciones (DAG lineal en BullMQ): metas, notify, aprobación humana, dry-run.  
+S0–S3 ya fusionados.
 
 Decisiones aceptadas: ver `docs/adr/`.
 

@@ -7,6 +7,7 @@ export function AppNav({ current }: { current: string }) {
     { href: "/app/dashboard", label: "Análisis" },
     { href: "/app/metas", label: "Metas" },
     { href: "/app/asistente", label: "Asistente" },
+    { href: "/app/automatizaciones", label: "Automatizaciones" },
   ];
 
   return (

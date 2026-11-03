@@ -37,10 +37,10 @@ export default function HomePage() {
           </p>
         </section>
         <section>
-          <h2>Asistente con herramientas</h2>
+          <h2>Automatizaciones</h2>
           <p>
-            Pregunta en español por KPIs y metas; el asistente solo lee datos de
-            tu organización (mock u OpenAI).
+            Flujos con verificación de metas, notificación y aprobación humana
+            (dry-run incluido).
           </p>
         </section>
       </div>

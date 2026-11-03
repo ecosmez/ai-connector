@@ -1,4 +1,4 @@
-# Security model — S0–S3
+# Security model — S0–S4
 
 ## Authentication
 
@@ -16,7 +16,7 @@
 ## Isolation
 
 - Application policy checks on every mutating/query route.
-- PostgreSQL RLS on tenant-owned tables as defense in depth (including `Connection`, `DataSnapshot`, `SyncRun`, `Dashboard`, `SemanticModel`, `MetricDefinition`, `Goal`, `AssistantThread`, `AssistantMessage`).
+- PostgreSQL RLS on tenant-owned tables as defense in depth (including workflows/approvals).
 - App DB role must be **NOSUPERUSER** and **NOBYPASSRLS** (superusers bypass FORCE RLS).
 - Negative tests: cross-org IDOR must return 403/404.
 
@@ -26,6 +26,13 @@
 - Tool allowlist is read-only; schema-validated args; tenant-scoped execution.
 - User prompts sanitized and wrapped as untrusted; system prompt rejects override attempts.
 - Audit stores tool names / round counts — never API keys or full model system prompts.
+
+## Workflows (S4)
+
+- Step types are allowlisted; no arbitrary code execution.
+- Dry-run cannot create durable approvals or pretend external notify delivery.
+- Approvals require `workflow:manage`; assistant must not auto-approve.
+- Run start supports `Idempotency-Key` to prevent duplicate side-effecting executions.
 
 ## Sync / idempotency
 
