@@ -22,8 +22,10 @@ Still open: D7 cloud/region, D10 retention minima, D11 DR targets (do not claim 
 | S1 Mock connector → sync → dashboard | Done (PR #2) |
 | S2 Semantic model + KPIs + goals | Done (PR #3) |
 | S3 AI assistant (tool allowlist) | Done (PR #4) |
-| S4 Workflows (in-house DAG) | In progress (this PR) |
-| S5–S8 | Not started |
+| S4 Workflows (in-house DAG) | Done (PR #5) |
+| S5 Notifications + scheduled workflows | Not started |
+| S6 Enterprise identity (SSO/SCIM/MFA) | Not started |
+| S7–S8 | Not started (hardening / platform console) |
 
 ## S4 exit criteria
 
