@@ -14,8 +14,11 @@ import {
   WORKFLOW_QUEUE,
   WORKFLOW_STEP_TYPES,
   WorkflowJobData,
+  WorkflowScheduledJobData,
   WorkflowStepDef,
 } from "./workflow.types";
+
+const CRON_PATTERN = /^(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)$/;
 
 @Injectable()
 export class WorkflowsService {
@@ -439,6 +442,7 @@ export class WorkflowsService {
               unknown
             >)
           : {};
+      context.workflowName = run.definition.name;
 
       for (const step of steps) {
         const stepRun = run.stepRuns.find((s) => s.stepKey === step.key);
@@ -593,5 +597,183 @@ export class WorkflowsService {
         }),
       );
     }
+  }
+
+  scheduledJobId(definitionId: string) {
+    return `scheduled-workflow:${definitionId}`;
+  }
+
+  async updateSchedule(
+    userId: string,
+    organizationId: string,
+    definitionId: string,
+    input: { enabled: boolean; cron?: string; timezone?: string },
+  ) {
+    await this.policyService.assertPermission(
+      userId,
+      organizationId,
+      PERMISSIONS.WORKFLOW_MANAGE,
+    );
+
+    const cron = input.cron?.trim() || "0 8 * * *";
+    if (input.enabled && !CRON_PATTERN.test(cron)) {
+      throw new ApiException(
+        HttpStatus.BAD_REQUEST,
+        "invalid_cron",
+        "Cron inválido (se esperan 5 campos)",
+      );
+    }
+
+    const org = await this.prisma.organization.findUnique({
+      where: { id: organizationId },
+    });
+    const timezone =
+      input.timezone?.trim() || org?.timezone || "America/Puerto_Rico";
+
+    const definition = await this.prisma.withOrganizationContext(
+      organizationId,
+      async (tx) => {
+        const existing = await tx.workflowDefinition.findFirst({
+          where: { id: definitionId, organizationId },
+        });
+        if (!existing) return null;
+        return tx.workflowDefinition.update({
+          where: { id: existing.id },
+          data: {
+            scheduleEnabled: input.enabled,
+            scheduleCron: input.enabled ? cron : null,
+            scheduleTimezone: input.enabled ? timezone : null,
+          },
+        });
+      },
+    );
+
+    if (!definition) {
+      throw new ApiException(
+        HttpStatus.NOT_FOUND,
+        "workflow_not_found",
+        "Automatización no encontrada",
+      );
+    }
+
+    await this.syncScheduler(definition);
+
+    await this.auditService.record({
+      organizationId,
+      actorUserId: userId,
+      action: "workflow.schedule_updated",
+      resourceType: "workflow_definition",
+      resourceId: definition.id,
+      metadata: {
+        enabled: definition.scheduleEnabled,
+        cron: definition.scheduleCron,
+        timezone: definition.scheduleTimezone,
+      },
+    });
+
+    return definition;
+  }
+
+  private async syncScheduler(definition: {
+    id: string;
+    organizationId: string;
+    scheduleEnabled: boolean;
+    scheduleCron: string | null;
+    scheduleTimezone: string | null;
+  }) {
+    if (this.inlineMode()) return;
+    const schedulerId = this.scheduledJobId(definition.id);
+    if (!definition.scheduleEnabled || !definition.scheduleCron) {
+      try {
+        await this.queue.removeJobScheduler(schedulerId);
+      } catch {
+        // Scheduler may not exist yet.
+      }
+      return;
+    }
+    await this.queue.upsertJobScheduler(
+      schedulerId,
+      {
+        pattern: definition.scheduleCron,
+        tz: definition.scheduleTimezone ?? "America/Puerto_Rico",
+      },
+      {
+        name: "scheduled",
+        data: {
+          definitionId: definition.id,
+          organizationId: definition.organizationId,
+          createRun: true,
+        } as WorkflowScheduledJobData,
+        opts: {
+          removeOnComplete: 50,
+          removeOnFail: 50,
+        },
+      },
+    );
+  }
+
+  /** Fired by BullMQ scheduler — creates a real (non dry-run) run. */
+  async handleScheduledTick(organizationId: string, definitionId: string) {
+    const definition = await this.prisma.withOrganizationContext(
+      organizationId,
+      (tx) =>
+        tx.workflowDefinition.findFirst({
+          where: {
+            id: definitionId,
+            organizationId,
+            status: "active",
+            scheduleEnabled: true,
+          },
+        }),
+    );
+    if (!definition) return null;
+
+    const steps = parseSteps(definition.steps);
+    this.validateSteps(steps);
+
+    const run = await this.prisma.withOrganizationContext(
+      organizationId,
+      async (tx) => {
+        const created = await tx.workflowRun.create({
+          data: {
+            organizationId,
+            companyId: definition.companyId,
+            definitionId: definition.id,
+            triggeredByUserId: null,
+            status: RUN_STATUS.QUEUED,
+            dryRun: false,
+            context: { trigger: "schedule" },
+          },
+        });
+        for (const step of steps) {
+          await tx.workflowStepRun.create({
+            data: {
+              organizationId,
+              runId: created.id,
+              stepKey: step.key,
+              stepType: step.type,
+              status: STEP_STATUS.PENDING,
+            },
+          });
+        }
+        return created;
+      },
+    );
+
+    await this.auditService.record({
+      organizationId,
+      action: "workflow.run_started",
+      resourceType: "workflow_run",
+      resourceId: run.id,
+      metadata: { definitionId, dryRun: false, trigger: "schedule" },
+    });
+
+    await this.dispatch(run.id, organizationId);
+    if (this.inlineMode()) {
+      return this.prisma.withOrganizationContext(organizationId, (tx) =>
+        tx.workflowRun.findUniqueOrThrow({ where: { id: run.id } }),
+      );
+    }
+    return run;
   }
 }

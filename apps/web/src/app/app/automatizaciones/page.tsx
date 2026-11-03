@@ -9,6 +9,8 @@ type Workflow = {
   name: string;
   description: string | null;
   steps: unknown;
+  scheduleEnabled?: boolean;
+  scheduleCron?: string | null;
 };
 
 type Run = {
@@ -156,6 +158,37 @@ export default function AutomatizacionesPage() {
     }
   }
 
+  async function toggleSchedule(workflow: Workflow, enabled: boolean) {
+    if (!token || !orgId) return;
+    setBusy(true);
+    setError(null);
+    setMessage(null);
+    try {
+      await apiRequest(
+        `/organizations/${orgId}/workflows/${workflow.id}/schedule`,
+        {
+          method: "POST",
+          token,
+          body: {
+            enabled,
+            cron: "0 8 * * *",
+            timezone: "America/Puerto_Rico",
+          },
+        },
+      );
+      setMessage(
+        enabled
+          ? "Programación diaria 08:00 activada."
+          : "Programación desactivada.",
+      );
+      await refresh(token, orgId);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function decide(approvalId: string, decision: "approved" | "rejected") {
     if (!token || !orgId) return;
     setBusy(true);
@@ -184,8 +217,9 @@ export default function AutomatizacionesPage() {
       <AppNav current="Automatizaciones" />
       <h1 className="brand">Automatizaciones</h1>
       <p className="lead">
-        Flujos lineales (BullMQ): verificar meta, notificar y pedir aprobación
-        humana. Dry-run simula sin efectos.
+        Flujos lineales (BullMQ): verificar meta, notificar al centro de avisos y
+        pedir aprobación humana. Dry-run simula sin efectos; programa ejecuciones
+        diarias.
       </p>
 
       {error && <p className="error">{error}</p>}
@@ -212,6 +246,11 @@ export default function AutomatizacionesPage() {
           <section key={w.id}>
             <h2>{w.name}</h2>
             <p>{w.description ?? "Sin descripción"}</p>
+            <p>
+              {w.scheduleEnabled
+                ? `Programada · ${w.scheduleCron ?? "cron"}`
+                : "Sin programación"}
+            </p>
             <div className="actions" style={{ marginTop: 12 }}>
               <button
                 type="button"
@@ -228,6 +267,14 @@ export default function AutomatizacionesPage() {
                 onClick={() => startRun(w.id, false)}
               >
                 Ejecutar
+              </button>
+              <button
+                type="button"
+                className="button button-secondary"
+                disabled={busy}
+                onClick={() => toggleSchedule(w, !w.scheduleEnabled)}
+              >
+                {w.scheduleEnabled ? "Quitar horario" : "Programar 08:00"}
               </button>
             </div>
           </section>

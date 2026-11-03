@@ -1,4 +1,4 @@
-# Security model — S0–S4
+# Security model — S0–S5
 
 ## Authentication
 
@@ -33,6 +33,12 @@
 - Dry-run cannot create durable approvals or pretend external notify delivery.
 - Approvals require `workflow:manage`; assistant must not auto-approve.
 - Run start supports `Idempotency-Key` to prevent duplicate side-effecting executions.
+
+## Notifications (S5)
+
+- `notification:read` gates inbox access; org-wide notifications (null recipient) are visible to permitted members.
+- Dry-run never inserts `Notification` rows.
+- Scheduled workflow ticks are org-scoped and do not bypass RLS when creating runs/notifications.
 
 ## Sync / idempotency
 

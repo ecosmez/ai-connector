@@ -3,17 +3,17 @@
 **Status:** Living document for Fase 1 construction  
 **Stack ADRs:** [0001](adr/0001-application-stack.md) · [0002](adr/0002-database-and-analytics.md) · [0003](adr/0003-queue-and-workflow-engine.md) · [0004](adr/0004-llm-provider.md) · [0005](adr/0005-locale-and-sync-timezone.md)
 
-## Current shape (S4)
+## Current shape (S5)
 
 Modular monolith:
 
 | Process | Path | Role |
 |---|---|---|
-| Web | `apps/web` | Next.js UI (Spanish-first + automatizaciones) |
-| API | `apps/api` | NestJS modules through assistant + workflows |
+| Web | `apps/web` | Next.js UI (Spanish-first + automatizaciones + notificaciones) |
+| API | `apps/api` | NestJS modules through assistant + workflows + notifications |
 | Shared | `packages/shared` | DTOs, permission constants, error codes |
-| Postgres | docker-compose / local | OLTP + snapshots + semantic + assistant + workflows |
-| Redis | docker-compose / local | BullMQ sync + workflow queues |
+| Postgres | docker-compose / local | OLTP + snapshots + semantic + assistant + workflows + notifications |
+| Redis | docker-compose / local | BullMQ sync + workflow queues (incl. schedules) |
 
 ## Domain modules (API)
 
@@ -27,9 +27,10 @@ Modular monolith:
 - `goals` — targets vs KPI actuals
 - `dashboards` — freshness panel + KPIs + goals + ETag
 - `assistant` — LLM orchestrator (OpenAI/mock), tool allowlist, sanitization
-- `workflows` — in-house linear DAG (BullMQ), dry-run, approvals ([ADR 0006](adr/0006-workflow-engine.md))
+- `workflows` — in-house linear DAG (BullMQ), dry-run, approvals, schedules ([ADR 0006](adr/0006-workflow-engine.md))
+- `notifications` — in-app inbox fed by workflow `notify` steps
 
-Deferred: real ERP/CRM connectors, full BI editor, Temporal, notifications center, platform console.
+Deferred: real ERP/CRM connectors, full BI editor, Temporal, platform console, SSO (S6).
 
 ## Request path (tenant safety)
 
@@ -65,6 +66,13 @@ Deferred: real ERP/CRM connectors, full BI editor, Temporal, notifications cente
 2. Start run (`dryRun` and/or `Idempotency-Key`) → BullMQ `workflow-runs` (or inline in tests).
 3. Engine advances steps; `wait_approval` pauses until human decide; dry-run simulates approval.
 4. Audit definition create, run start, approval decisions, run success.
+
+## Notifications + schedules (S5)
+
+1. Real `notify` steps write `Notification` rows (`channel=in_app`); dry-run only marks `simulated`.
+2. `POST .../workflows/:id/schedule` enables BullMQ job scheduler (`scheduleCron` + org TZ).
+3. Scheduled ticks create non-dry-run runs with `context.trigger=schedule`.
+4. Spanish UI `/app/notificaciones` lists/marks read; Automatizaciones toggles schedule.
 
 ## Non-goals in this codebase stage
 

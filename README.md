@@ -4,8 +4,8 @@ SaaS multi-tenant de inteligencia de negocios y automatización (Fase 1 en const
 
 ## Estado
 
-**S4** — automatizaciones (DAG lineal en BullMQ): metas, notify, aprobación humana, dry-run.  
-S0–S3 ya fusionados.
+**S5** — centro de notificaciones in-app + programación de automatizaciones.  
+S0–S4: foundation → sync → KPIs/metas → asistente → workflows.
 
 Decisiones aceptadas: ver `docs/adr/`.
 
