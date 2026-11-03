@@ -1,4 +1,4 @@
-# API contracts — S0–S6
+# API contracts — S0–S7
 
 Base URL: `http://localhost:3001`  
 Auth: `Authorization: Bearer <sessionToken>`  
@@ -32,9 +32,11 @@ Errors: `{ "statusCode": number, "code": string, "message": string }`
 
 ## Audit
 
-| Method | Path | Permission |
-|---|---|---|
-| GET | `/organizations/:orgId/audit-events` | `audit:read` |
+| Method | Path | Permission | Notes |
+|---|---|---|---|
+| GET | `/organizations/:orgId/audit-events` | `audit:read` | Newest first |
+| GET | `/organizations/:orgId/audit-events/verify` | `audit:read` | Recomputes org hash-chain |
+| GET | `/organizations/:orgId/audit-events/export` | `audit:read` | Oldest-first JSON + `chainValid` |
 
 ## Connections & sync (S1)
 
