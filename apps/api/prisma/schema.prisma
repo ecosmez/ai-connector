@@ -12,6 +12,8 @@ model User {
   email        String         @unique
   passwordHash String
   name         String
+  /// Cross-tenant ops console (S8). Does not grant private tenant payloads.
+  isPlatformAdmin Boolean     @default(false)
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
   memberships  Membership[]
