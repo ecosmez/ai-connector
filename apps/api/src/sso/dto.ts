@@ -1,4 +1,4 @@
-import { IsBoolean, IsIn, IsOptional, IsString, MinLength } from "class-validator";
+import { IsBoolean, IsIn, IsOptional } from "class-validator";
 
 export class UpsertSsoConfigDto {
   @IsBoolean()
@@ -11,14 +11,4 @@ export class UpsertSsoConfigDto {
   @IsOptional()
   @IsBoolean()
   jitProvisioning?: boolean;
-}
-
-export class MockAuthorizeDto {
-  @IsString()
-  @MinLength(3)
-  email!: string;
-
-  @IsOptional()
-  @IsString()
-  name?: string;
 }
