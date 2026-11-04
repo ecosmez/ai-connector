@@ -7,8 +7,12 @@ import { MeResponse, apiRequest, readToken } from "@/lib/api";
 type MfaStatus = { enabled: boolean; pendingSetup: boolean; type: string | null };
 type SetupPayload = { secret: string; otpauthUrl: string };
 
+type SecurityPolicy = { organizationId: string; requireMfa: boolean };
+
 export default function SeguridadPage() {
   const [token, setToken] = useState<string | null>(null);
+  const [orgId, setOrgId] = useState<string | null>(null);
+  const [policy, setPolicy] = useState<SecurityPolicy | null>(null);
   const [status, setStatus] = useState<MfaStatus | null>(null);
   const [setup, setSetup] = useState<SetupPayload | null>(null);
   const [code, setCode] = useState("");
@@ -17,9 +21,16 @@ export default function SeguridadPage() {
   const [message, setMessage] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  const refresh = useCallback(async (tok: string) => {
+  const refresh = useCallback(async (tok: string, organizationId?: string) => {
     const s = await apiRequest<MfaStatus>("/auth/mfa", { token: tok });
     setStatus(s);
+    if (organizationId) {
+      const p = await apiRequest<SecurityPolicy>(
+        `/organizations/${organizationId}/security-policy`,
+        { token: tok },
+      );
+      setPolicy(p);
+    }
   }, []);
 
   useEffect(() => {
@@ -30,11 +41,39 @@ export default function SeguridadPage() {
     }
     setToken(tok);
     apiRequest<MeResponse>("/auth/me", { token: tok })
-      .then(async () => {
-        await refresh(tok);
+      .then(async (me) => {
+        const first = me.memberships[0];
+        if (first) setOrgId(first.organizationId);
+        await refresh(tok, first?.organizationId);
       })
       .catch((err: Error) => setError(err.message));
   }, [refresh]);
+
+  async function savePolicy(e: FormEvent) {
+    e.preventDefault();
+    if (!token || !orgId) return;
+    setBusy(true);
+    setError(null);
+    setMessage(null);
+    try {
+      const form = new FormData(e.currentTarget as HTMLFormElement);
+      const requireMfa = form.get("requireMfa") === "on";
+      const p = await apiRequest<SecurityPolicy>(
+        `/organizations/${orgId}/security-policy`,
+        { method: "PUT", token, body: { requireMfa } },
+      );
+      setPolicy(p);
+      setMessage(
+        requireMfa
+          ? "La organización ahora exige MFA para contraseña."
+          : "Exigencia de MFA desactivada.",
+      );
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error");
+    } finally {
+      setBusy(false);
+    }
+  }
 
   async function startSetup() {
     if (!token) return;
@@ -105,8 +144,8 @@ export default function SeguridadPage() {
       <AppNav current="Seguridad" />
       <h1 className="brand">Seguridad</h1>
       <p className="lead">
-        Autenticación en dos pasos (TOTP). SSO/SCIM llegan en un incremento
-        posterior.
+        MFA personal (TOTP) y política de organización (S11). SSO queda
+        exento de esta exigencia.
       </p>
 
       {error && <p className="error">{error}</p>}
@@ -161,6 +200,35 @@ export default function SeguridadPage() {
             Activar MFA
           </button>
         </form>
+      )}
+
+      {orgId && policy && (
+        <div className="panel" style={{ marginTop: 28 }}>
+          <section>
+            <h2>Política de organización</h2>
+            <form className="form" onSubmit={savePolicy}>
+              <label>
+                <input
+                  name="requireMfa"
+                  type="checkbox"
+                  defaultChecked={policy.requireMfa}
+                  key={String(policy.requireMfa)}
+                />{" "}
+                Exigir MFA para inicio con contraseña
+              </label>
+              <p style={{ fontSize: 14, opacity: 0.8 }}>
+                Activa MFA personal antes de exigirla. Sesiones SSO no aplican.
+              </p>
+              <button
+                className="button button-primary"
+                type="submit"
+                disabled={busy}
+              >
+                Guardar política
+              </button>
+            </form>
+          </section>
+        </div>
       )}
 
       {status?.enabled && (

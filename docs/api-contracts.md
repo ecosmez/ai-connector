@@ -122,6 +122,12 @@ Allowlisted tools (read-only): `list_dashboards`, `get_dashboard_overview`, `lis
 | GET | `/auth/sso/mock/:orgId/authorize` | public | Mock IdP (form / `?email=`) |
 | GET | `/auth/sso/callback` | public | Exchanges code; `?format=json` for API |
 
+## Security policy (S11)
+
+| Method | Path | Auth | Notes |
+|---|---|---|---|
+| GET/PUT | `/organizations/:orgId/security-policy` | read / `organization:manage` | `{ requireMfa }` |
+
 ## SCIM (S10)
 
 | Method | Path | Auth | Notes |

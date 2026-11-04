@@ -11,6 +11,7 @@ export type AuthSession = {
   userId: string;
   activeOrganizationId: string | null;
   activeCompanyId: string | null;
+  authMethod: "password" | "sso";
   expiresAt: Date;
 };
 
