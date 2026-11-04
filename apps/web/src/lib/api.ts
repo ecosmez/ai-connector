@@ -63,6 +63,6 @@ export type Membership = {
 };
 
 export type MeResponse = {
-  user: { name: string; email: string };
+  user: { name: string; email: string; isPlatformAdmin?: boolean };
   memberships: Membership[];
 };

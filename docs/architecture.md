@@ -1,9 +1,9 @@
 # Architecture — AI Connector
 
 **Status:** Living document for Fase 1 construction  
-**Stack ADRs:** [0001](adr/0001-application-stack.md) · [0002](adr/0002-database-and-analytics.md) · [0003](adr/0003-queue-and-workflow-engine.md) · [0004](adr/0004-llm-provider.md) · [0005](adr/0005-locale-and-sync-timezone.md) · [0006](adr/0006-workflow-engine.md) · [0007](adr/0007-mfa-and-enterprise-identity.md) · [0008](adr/0008-audit-hash-chain.md)
+**Stack ADRs:** [0001](adr/0001-application-stack.md) · [0002](adr/0002-database-and-analytics.md) · [0003](adr/0003-queue-and-workflow-engine.md) · [0004](adr/0004-llm-provider.md) · [0005](adr/0005-locale-and-sync-timezone.md) · [0006](adr/0006-workflow-engine.md) · [0007](adr/0007-mfa-and-enterprise-identity.md) · [0008](adr/0008-audit-hash-chain.md) · [0009](adr/0009-platform-console.md)
 
-## Current shape (S7)
+## Current shape (S8)
 
 Modular monolith:
 
@@ -31,7 +31,7 @@ Modular monolith:
 - `notifications` — in-app inbox fed by workflow `notify` steps
 - `auth` MFA — TOTP enroll + login step-up ([ADR 0007](adr/0007-mfa-and-enterprise-identity.md))
 
-Deferred: real ERP/CRM connectors, full BI editor, Temporal, platform console, SSO/SCIM.
+Deferred: real ERP/CRM connectors, full BI editor, Temporal, SSO/SCIM, consented support access.
 
 ## Request path (tenant safety)
 
@@ -87,6 +87,12 @@ Deferred: real ERP/CRM connectors, full BI editor, Temporal, platform console, S
 1. `AuditService.record` locks per-org tip and writes `prevHash`/`eventHash`.
 2. `GET .../audit-events/verify` recomputes the chain; `/export` returns JSON + `chainValid`.
 3. Spanish UI `/app/auditoria` lists events and downloads export.
+
+## Platform console (S8)
+
+1. `User.isPlatformAdmin` gates `/platform/*`.
+2. Overview + org directory return counts/metadata only (no snapshots/KPIs/messages).
+3. Spanish UI `/app/plataforma`; seed user `platform@example.com`.
 
 ## Non-goals in this codebase stage
 

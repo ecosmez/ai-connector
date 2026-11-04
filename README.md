@@ -4,8 +4,8 @@ SaaS multi-tenant de inteligencia de negocios y automatización (Fase 1 en const
 
 ## Estado
 
-**S7** — auditoría con cadena hash + exportación JSON (ADR 0008).  
-S0–S6: foundation → sync → KPIs → asistente → workflows → notificaciones → MFA.
+**S8** — consola de plataforma (directorio/conteos; ADR 0009). SSO/SCIM siguen diferidos.  
+S0–S7 completos hasta auditoría hash-chain.
 
 Decisiones aceptadas: ver `docs/adr/`.
 
@@ -32,7 +32,7 @@ pnpm --filter @ai-connector/web dev
 
 API: `http://localhost:3001` · Web: `http://localhost:3000`
 
-Usuarios seed: `alice@example.com` / `bob@example.com` — contraseña `Password123!`
+Usuarios seed: `alice@example.com` / `bob@example.com` / `platform@example.com` (ops) — contraseña `Password123!`
 
 ## Pruebas
 

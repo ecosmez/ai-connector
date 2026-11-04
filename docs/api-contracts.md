@@ -1,4 +1,4 @@
-# API contracts — S0–S7
+# API contracts — S0–S8
 
 Base URL: `http://localhost:3001`  
 Auth: `Authorization: Bearer <sessionToken>`  
@@ -103,6 +103,14 @@ Allowlisted tools (read-only): `list_dashboards`, `get_dashboard_overview`, `lis
 | POST | `/organizations/:orgId/notifications/:id/read` | `notification:read` | Marks `readAt` |
 
 `notify` workflow steps with `channel=in_app` (default) create `Notification` rows; dry-run only simulates.
+
+## Platform (S8)
+
+| Method | Path | Auth | Notes |
+|---|---|---|---|
+| GET | `/platform/overview` | `isPlatformAdmin` | Aggregate counts |
+| GET | `/platform/organizations` | `isPlatformAdmin` | Directory metadata + counts |
+| GET | `/platform/health` | `isPlatformAdmin` | DB + Redis probe |
 
 ## Health
 
