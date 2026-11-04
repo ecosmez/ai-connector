@@ -19,6 +19,12 @@ export type WorkflowJobData = {
   organizationId: string;
 };
 
+export type WorkflowScheduledJobData = {
+  definitionId: string;
+  organizationId: string;
+  createRun: true;
+};
+
 export const RUN_STATUS = {
   QUEUED: "queued",
   RUNNING: "running",

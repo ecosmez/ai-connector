@@ -17,6 +17,7 @@ export const PERMISSIONS = {
   ASSISTANT_USE: "assistant:use",
   WORKFLOW_MANAGE: "workflow:manage",
   WORKFLOW_MULTI_COMPANY: "workflow:multi_company",
+  NOTIFICATION_READ: "notification:read",
 } as const;
 
 export type Permission = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
@@ -40,6 +41,7 @@ export const ORG_OWNER_PERMISSIONS: Permission[] = [
   PERMISSIONS.ASSISTANT_USE,
   PERMISSIONS.WORKFLOW_MANAGE,
   PERMISSIONS.WORKFLOW_MULTI_COMPANY,
+  PERMISSIONS.NOTIFICATION_READ,
 ];
 
 export const COMPANY_ADMIN_PERMISSIONS: Permission[] = [
@@ -57,6 +59,7 @@ export const COMPANY_ADMIN_PERMISSIONS: Permission[] = [
   PERMISSIONS.GOAL_MANAGE,
   PERMISSIONS.ASSISTANT_USE,
   PERMISSIONS.WORKFLOW_MANAGE,
+  PERMISSIONS.NOTIFICATION_READ,
 ];
 
 export type ApiErrorBody = {

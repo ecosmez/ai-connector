@@ -1,4 +1,4 @@
-# Data model — S0–S4
+# Data model — S0–S6
 
 See also product spec §10. Table names below match Prisma models.
 
@@ -55,11 +55,24 @@ See also product spec §10. Table names below match Prisma models.
 
 | Model | Scope | Purpose |
 |---|---|---|
-| `WorkflowDefinition` | org (+ optional company) | Named linear step graph (JSON) |
+| `WorkflowDefinition` | org (+ optional company) | Named linear step graph (JSON); optional schedule fields (S5) |
 | `WorkflowRun` | org + definition | Execution; `dryRun`, optional `idempotencyKey` |
 | `WorkflowStepRun` | org + run | Per-step status/output |
 | `ApprovalRequest` | org + run/step | Human gate for `wait_approval` |
 
+## Entities (S5)
+
+| Model | Scope | Purpose |
+|---|---|---|
+| `Notification` | org (+ optional recipient user) | In-app inbox from `notify` steps |
+
+## Entities (S6)
+
+| Model | Scope | Purpose |
+|---|---|---|
+| `UserMfaFactor` | user | Encrypted TOTP secret + `enabledAt` |
+| `MfaChallenge` | user | Short-lived login step-up token (hashed) |
+
 ## Later (not migrated yet)
 
-Cross-company workflow graphs, Temporal migration criteria, full BI editor. AI tools remain read-only for mutations.
+SSO IdP bindings, SCIM, cross-company workflow graphs, Temporal, full BI editor, platform console. AI tools remain read-only for mutations.

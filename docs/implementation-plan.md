@@ -23,9 +23,9 @@ Still open: D7 cloud/region, D10 retention minima, D11 DR targets (do not claim 
 | S2 Semantic model + KPIs + goals | Done (PR #3) |
 | S3 AI assistant (tool allowlist) | Done (PR #4) |
 | S4 Workflows (in-house DAG) | Done (PR #5) |
-| S5 Notifications + scheduled workflows | Not started |
-| S6 Enterprise identity (SSO/SCIM/MFA) | Not started |
-| S7–S8 | Not started (hardening / platform console) |
+| S5 Notifications + scheduled workflows | Done (PR #6) |
+| S6 MFA step-up (TOTP) | In progress (this PR) |
+| S7–S8 | Not started (SSO/SCIM, hardening / platform console) |
 
 ## S4 exit criteria
 
@@ -36,3 +36,20 @@ Still open: D7 cloud/region, D10 retention minima, D11 DR targets (do not claim 
 - [x] Human approval resume path
 - [x] Spanish UI `/app/automatizaciones`
 - [x] Isolation + engine tests
+
+## S5 exit criteria
+
+- [x] `Notification` model + RLS + `notification:read`
+- [x] `notify` step persists in-app notifications (skipped on dry-run)
+- [x] Workflow schedule fields + BullMQ job scheduler / inline tick
+- [x] Spanish UI `/app/notificaciones` + schedule controls
+- [x] Isolation + notification/schedule tests
+
+## S6 exit criteria
+
+- [x] ADR 0007: MFA first; SSO/SCIM deferred
+- [x] `UserMfaFactor` + `MfaChallenge` (encrypted TOTP secret)
+- [x] Login step-up (`mfaRequired` + `/auth/mfa/verify`)
+- [x] Enroll / enable / disable APIs + audit events
+- [x] Spanish UI `/app/seguridad` + login MFA step
+- [x] Unit + integration MFA tests

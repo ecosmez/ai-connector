@@ -30,3 +30,29 @@ export class SwitchContextDto {
   @IsString()
   companyId?: string | null;
 }
+
+export class MfaVerifyLoginDto {
+  @IsString()
+  @MinLength(10)
+  mfaToken!: string;
+
+  @IsString()
+  @MinLength(6)
+  code!: string;
+}
+
+export class MfaEnableDto {
+  @IsString()
+  @MinLength(6)
+  code!: string;
+}
+
+export class MfaDisableDto {
+  @IsString()
+  @MinLength(8)
+  password!: string;
+
+  @IsString()
+  @MinLength(6)
+  code!: string;
+}

@@ -1,4 +1,4 @@
-# API contracts — S0–S4
+# API contracts — S0–S6
 
 Base URL: `http://localhost:3001`  
 Auth: `Authorization: Bearer <sessionToken>`  
@@ -9,9 +9,15 @@ Errors: `{ "statusCode": number, "code": string, "message": string }`
 | Method | Path | Notes |
 |---|---|---|
 | POST | `/auth/register` | Bootstrap user (dev/S0); body: email, password, name |
-| POST | `/auth/login` | Returns `{ token, user }` |
+| POST | `/auth/login` | `{ token, user }` or `{ mfaRequired: true, mfaToken, user }` when MFA enabled |
+| POST | `/auth/mfa/verify` | Body `{ mfaToken, code }` → session token |
+| GET | `/auth/mfa` | Authenticated; `{ enabled, pendingSetup, type }` |
+| POST | `/auth/mfa/setup` | Authenticated; returns `{ secret, otpauthUrl }` (pending enable) |
+| POST | `/auth/mfa/enable` | Authenticated; body `{ code }` |
+| POST | `/auth/mfa/disable` | Authenticated; body `{ password, code }` |
 | POST | `/auth/logout` | Revokes session |
-| GET | `/auth/me` | Current user + memberships |
+| GET | `/auth/me` | Current user + memberships + `mfa` status |
+
 
 ## Tenancy
 
@@ -85,6 +91,16 @@ Allowlisted tools (read-only): `list_dashboards`, `get_dashboard_overview`, `lis
 | GET | `/organizations/:orgId/workflow-runs/:id` | `workflow:manage` | Includes stepRuns + approvals |
 | GET | `/organizations/:orgId/approvals` | `workflow:manage` | `?status=pending` |
 | POST | `/organizations/:orgId/approvals/:id/decide` | `workflow:manage` | `{ decision: approved\|rejected, note? }` |
+| POST | `/organizations/:orgId/workflows/:id/schedule` | `workflow:manage` | `{ enabled, cron?, timezone? }` — BullMQ scheduler |
+
+## Notifications (S5)
+
+| Method | Path | Permission | Notes |
+|---|---|---|---|
+| GET | `/organizations/:orgId/notifications` | `notification:read` | `?unreadOnly=true` |
+| POST | `/organizations/:orgId/notifications/:id/read` | `notification:read` | Marks `readAt` |
+
+`notify` workflow steps with `channel=in_app` (default) create `Notification` rows; dry-run only simulates.
 
 ## Health
 

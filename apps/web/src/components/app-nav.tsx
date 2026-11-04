@@ -8,6 +8,8 @@ export function AppNav({ current }: { current: string }) {
     { href: "/app/metas", label: "Metas" },
     { href: "/app/asistente", label: "Asistente" },
     { href: "/app/automatizaciones", label: "Automatizaciones" },
+    { href: "/app/notificaciones", label: "Notificaciones" },
+    { href: "/app/seguridad", label: "Seguridad" },
   ];
 
   return (

@@ -50,6 +50,19 @@ export class StartWorkflowRunDto {
   dryRun?: boolean;
 }
 
+export class UpdateWorkflowScheduleDto {
+  @IsBoolean()
+  enabled!: boolean;
+
+  @IsOptional()
+  @IsString()
+  cron?: string;
+
+  @IsOptional()
+  @IsString()
+  timezone?: string;
+}
+
 export class DecideApprovalDto {
   @IsIn(["approved", "rejected"])
   decision!: "approved" | "rejected";

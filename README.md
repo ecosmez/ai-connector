@@ -4,8 +4,8 @@ SaaS multi-tenant de inteligencia de negocios y automatización (Fase 1 en const
 
 ## Estado
 
-**S4** — automatizaciones (DAG lineal en BullMQ): metas, notify, aprobación humana, dry-run.  
-S0–S3 ya fusionados.
+**S6** — MFA TOTP (login step-up) per ADR 0007; SSO/SCIM diferidos.  
+S0–S5: foundation → sync → KPIs → asistente → workflows → notificaciones.
 
 Decisiones aceptadas: ver `docs/adr/`.
 
