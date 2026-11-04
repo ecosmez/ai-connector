@@ -28,6 +28,7 @@ Still open: D7 cloud/region, D10 retention minima, D11 DR targets (do not claim 
 | S7 Audit hash-chain + export | Done (PR #8) |
 | S8 Platform console | Done (PR #10 to main; prior #9 landed on S7 branch only) |
 | S9 OIDC SSO (mock IdP) | Done (this PR to main; prior #11 landed on S8 branch only) |
+| S10 SCIM Users | In progress (this PR) |
 
 ## S4 exit criteria
 
@@ -79,3 +80,10 @@ Still open: D7 cloud/region, D10 retention minima, D11 DR targets (do not claim 
 - [x] Mock authorize issues codes; JIT membership optional
 - [x] Spanish UI login SSO + `/app/sso`
 - [x] Isolation / login tests
+
+## S10 exit criteria
+
+- [x] ADR 0011: SCIM 2.0 Users + org bearer token
+- [x] `OrganizationScimToken` + `/scim/v2/Users` CRUD (soft delete)
+- [x] Admin mint/revoke APIs + Spanish `/app/scim`
+- [x] Provisioning + revoke tests

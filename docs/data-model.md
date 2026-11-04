@@ -92,6 +92,12 @@ See also product spec §10. Table names below match Prisma models.
 
 `User.passwordHash` is optional (SSO-only users).
 
+## SCIM (S10)
+
+| Model | Scope | Purpose |
+|---|---|---|
+| `OrganizationScimToken` | org | Bearer token hash + prefix; soft revoke |
+
 ## Later (not migrated yet)
 
-External OIDC issuer wiring, SCIM, cross-company workflow graphs, Temporal, full BI editor. AI tools remain read-only for mutations.
+External OIDC issuer wiring, SCIM Groups/Bulk, cross-company workflow graphs, Temporal, full BI editor. AI tools remain read-only for mutations.

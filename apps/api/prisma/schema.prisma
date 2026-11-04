@@ -30,6 +30,7 @@ model User {
   mfaFactor          UserMfaFactor?
   mfaChallenges      MfaChallenge[]
   ssoIdentities      UserSsoIdentity[]
+  scimTokensCreated  OrganizationScimToken[] @relation("ScimTokenCreator")
 }
 
 /// TOTP factor for local auth step-up (S6). User-scoped (no org RLS).
@@ -88,6 +89,25 @@ model Organization {
   ssoAuthStates SsoAuthState[]
   ssoAuthorizationCodes SsoAuthorizationCode[]
   ssoIdentities UserSsoIdentity[]
+  scimTokens OrganizationScimToken[]
+}
+
+/// Org-scoped SCIM bearer token (S10). Raw token shown once; hash at rest.
+model OrganizationScimToken {
+  id              String    @id @default(cuid())
+  organizationId  String
+  name            String
+  tokenHash       String    @unique
+  tokenPrefix     String
+  lastUsedAt      DateTime?
+  revokedAt       DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  createdByUserId String?
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdBy       User?        @relation("ScimTokenCreator", fields: [createdByUserId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId])
 }
 
 /// Org-scoped OIDC/mock SSO settings (S9).
