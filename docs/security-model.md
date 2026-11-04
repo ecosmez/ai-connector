@@ -1,4 +1,4 @@
-# Security model — S0–S8
+# Security model — S0–S10
 
 ## Authentication
 
@@ -62,6 +62,19 @@
 - `isPlatformAdmin` is explicit; does **not** unlock tenant snapshots, assistant threads, MFA secrets, or audit export of foreign orgs via tenant routes.
 - `/platform/*` returns directory aggregates only; views are audited as `platform.console_viewed`.
 
-## Deferred (post-S8)
+## SSO (S9)
 
-SSO (Entra, Google Workspace), SCIM, IP/geo policies, device inventory UI, org-wide “require MFA” policy, consented support break-glass.
+- Org-scoped OIDC authorization-code + PKCE ([ADR 0010](adr/0010-oidc-sso.md)).
+- Mock IdP in-process for local/CI; external `oidc` provider reserved.
+- Client secrets encrypted at rest; SSO login skips local TOTP (IdP is the factor).
+- Audit: `sso.config_updated`, `user.login_sso` — never codes/secrets.
+
+## SCIM (S10)
+
+- Org-scoped bearer tokens (hashed at rest; shown once) for `/scim/v2/Users` ([ADR 0011](adr/0011-scim-provisioning.md)).
+- Soft deprovision: membership `suspended`; no hard user delete via SCIM.
+- Audit: `scim.token_*`, `scim.user_*` — never raw tokens.
+
+## Deferred (post-S10)
+
+External Entra/Google issuer wiring, SCIM Groups/Bulk, IP/geo policies, device inventory UI, org-wide “require MFA” policy, consented support break-glass.

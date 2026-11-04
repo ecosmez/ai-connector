@@ -10,6 +10,8 @@ export function AppNav({ current }: { current: string }) {
     { href: "/app/automatizaciones", label: "Automatizaciones" },
     { href: "/app/notificaciones", label: "Notificaciones" },
     { href: "/app/seguridad", label: "Seguridad" },
+    { href: "/app/sso", label: "SSO" },
+    { href: "/app/scim", label: "SCIM" },
     { href: "/app/auditoria", label: "Auditoría" },
     { href: "/app/plataforma", label: "Plataforma" },
   ];

@@ -81,6 +81,23 @@ See also product spec §10. Table names below match Prisma models.
 
 `User.isPlatformAdmin` marks cross-tenant console operators (directory only).
 
+## SSO (S9)
+
+| Model | Scope | Purpose |
+|---|---|---|
+| `OrganizationSsoConfig` | org | Mock/OIDC settings; encrypted client secret |
+| `SsoAuthState` | org | PKCE state between start and callback |
+| `SsoAuthorizationCode` | org | Mock IdP one-time codes |
+| `UserSsoIdentity` | org+user | Linked `issuer`+`subject` |
+
+`User.passwordHash` is optional (SSO-only users).
+
+## SCIM (S10)
+
+| Model | Scope | Purpose |
+|---|---|---|
+| `OrganizationScimToken` | org | Bearer token hash + prefix; soft revoke |
+
 ## Later (not migrated yet)
 
-SSO IdP bindings, SCIM, cross-company workflow graphs, Temporal, full BI editor. AI tools remain read-only for mutations.
+External OIDC issuer wiring, SCIM Groups/Bulk, cross-company workflow graphs, Temporal, full BI editor. AI tools remain read-only for mutations.

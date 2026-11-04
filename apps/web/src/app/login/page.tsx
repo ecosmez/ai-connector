@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
-import { apiPost, saveToken } from "@/lib/api";
+import { API_URL, apiPost, saveToken } from "@/lib/api";
 
 type LoginResponse =
   | { token: string; mfaRequired?: false }
@@ -14,6 +14,7 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [mfaToken, setMfaToken] = useState<string | null>(null);
+  const [ssoLoading, setSsoLoading] = useState(false);
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -48,6 +49,31 @@ export default function LoginPage() {
     }
   }
 
+  async function onSso(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError(null);
+    setSsoLoading(true);
+    const form = new FormData(event.currentTarget);
+    const organizationId = String(form.get("organizationId")).trim();
+    try {
+      const res = await fetch(
+        `${API_URL}/auth/sso/start?organizationId=${encodeURIComponent(organizationId)}`,
+      );
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(
+          typeof data === "object" && data && "message" in data
+            ? String((data as { message: string }).message)
+            : "No se pudo iniciar SSO",
+        );
+      }
+      window.location.href = (data as { authorizeUrl: string }).authorizeUrl;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No se pudo iniciar SSO");
+      setSsoLoading(false);
+    }
+  }
+
   return (
     <main>
       <nav className="nav">
@@ -59,7 +85,7 @@ export default function LoginPage() {
       <p className="lead">
         {mfaToken
           ? "Introduce el código de tu autenticador (MFA)."
-          : "Accede con tu cuenta local."}
+          : "Accede con tu cuenta local o SSO de organización."}
       </p>
       <form className="form" onSubmit={onSubmit}>
         {!mfaToken ? (
@@ -96,6 +122,23 @@ export default function LoginPage() {
           {loading ? "Entrando…" : mfaToken ? "Verificar" : "Entrar"}
         </button>
       </form>
+
+      {!mfaToken && (
+        <form className="form" style={{ marginTop: 36 }} onSubmit={onSso}>
+          <h2 className="section-title">SSO</h2>
+          <label>
+            ID de organización
+            <input name="organizationId" required placeholder="seed_org_a" />
+          </label>
+          <button
+            className="button"
+            type="submit"
+            disabled={ssoLoading}
+          >
+            {ssoLoading ? "Redirigiendo…" : "Continuar con SSO"}
+          </button>
+        </form>
+      )}
     </main>
   );
 }

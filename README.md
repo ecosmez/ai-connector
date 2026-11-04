@@ -4,8 +4,8 @@ SaaS multi-tenant de inteligencia de negocios y automatización (Fase 1 en const
 
 ## Estado
 
-**S8** — consola de plataforma (directorio/conteos; ADR 0009). SSO/SCIM siguen diferidos.  
-S0–S7 completos hasta auditoría hash-chain.
+**S10** — SCIM 2.0 Users + tokens de org (ADR 0011). Emisores Entra/Google y Groups siguen diferidos.  
+S0–S9 completos (SSO mock + plataforma + auditoría).
 
 Decisiones aceptadas: ver `docs/adr/`.
 

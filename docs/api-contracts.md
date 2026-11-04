@@ -112,6 +112,25 @@ Allowlisted tools (read-only): `list_dashboards`, `get_dashboard_overview`, `lis
 | GET | `/platform/organizations` | `isPlatformAdmin` | Directory metadata + counts |
 | GET | `/platform/health` | `isPlatformAdmin` | DB + Redis probe |
 
+## SSO (S9)
+
+| Method | Path | Auth | Notes |
+|---|---|---|---|
+| GET/PUT | `/organizations/:orgId/sso` | read / `organization:manage` | Mock SSO config |
+| GET | `/auth/sso/status` | public | `{ enabled, organizationName }` |
+| GET | `/auth/sso/start` | public | PKCE start → `{ authorizeUrl }` |
+| GET | `/auth/sso/mock/:orgId/authorize` | public | Mock IdP (form / `?email=`) |
+| GET | `/auth/sso/callback` | public | Exchanges code; `?format=json` for API |
+
+## SCIM (S10)
+
+| Method | Path | Auth | Notes |
+|---|---|---|---|
+| GET/POST | `/organizations/:orgId/scim/tokens` | `organization:manage` | List / mint (raw token once) |
+| POST | `/organizations/:orgId/scim/tokens/:id/revoke` | `organization:manage` | Revoke |
+| GET/POST | `/scim/v2/Users` | SCIM bearer | List / create |
+| GET/PUT/PATCH/DELETE | `/scim/v2/Users/:id` | SCIM bearer | Read / replace / patch / soft-delete |
+
 ## Health
 
 | Method | Path |

@@ -10,7 +10,8 @@ datasource db {
 model User {
   id           String         @id @default(cuid())
   email        String         @unique
-  passwordHash String
+  /// Null for SSO-provisioned users without a local password (S9).
+  passwordHash String?
   name         String
   /// Cross-tenant ops console (S8). Does not grant private tenant payloads.
   isPlatformAdmin Boolean     @default(false)
@@ -28,6 +29,8 @@ model User {
   notifications      Notification[]
   mfaFactor          UserMfaFactor?
   mfaChallenges      MfaChallenge[]
+  ssoIdentities      UserSsoIdentity[]
+  scimTokensCreated  OrganizationScimToken[] @relation("ScimTokenCreator")
 }
 
 /// TOTP factor for local auth step-up (S6). User-scoped (no org RLS).
@@ -82,6 +85,96 @@ model Organization {
   workflowStepRuns WorkflowStepRun[]
   approvalRequests ApprovalRequest[]
   notifications Notification[]
+  ssoConfig OrganizationSsoConfig?
+  ssoAuthStates SsoAuthState[]
+  ssoAuthorizationCodes SsoAuthorizationCode[]
+  ssoIdentities UserSsoIdentity[]
+  scimTokens OrganizationScimToken[]
+}
+
+/// Org-scoped SCIM bearer token (S10). Raw token shown once; hash at rest.
+model OrganizationScimToken {
+  id              String    @id @default(cuid())
+  organizationId  String
+  name            String
+  tokenHash       String    @unique
+  tokenPrefix     String
+  lastUsedAt      DateTime?
+  revokedAt       DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  createdByUserId String?
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdBy       User?        @relation("ScimTokenCreator", fields: [createdByUserId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId])
+}
+
+/// Org-scoped OIDC/mock SSO settings (S9).
+model OrganizationSsoConfig {
+  id                     String   @id @default(cuid())
+  organizationId         String   @unique
+  /// mock | oidc (S9 ships mock end-to-end; oidc reserved)
+  provider               String   @default("mock")
+  issuer                 String
+  clientId               String
+  clientSecretCiphertext String
+  enabled                Boolean  @default(false)
+  jitProvisioning        Boolean  @default(true)
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+  organization           Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+}
+
+/// PKCE login state between /auth/sso/start and callback.
+model SsoAuthState {
+  id             String   @id @default(cuid())
+  state          String   @unique
+  codeVerifier   String
+  nonce          String
+  organizationId String
+  redirectUri    String
+  expiresAt      DateTime
+  createdAt      DateTime @default(now())
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+}
+
+/// Mock IdP authorization codes (S9).
+model SsoAuthorizationCode {
+  id             String    @id @default(cuid())
+  code           String    @unique
+  organizationId String
+  email          String
+  name           String
+  subject        String
+  codeChallenge  String
+  redirectUri    String
+  expiresAt      DateTime
+  consumedAt     DateTime?
+  createdAt      DateTime  @default(now())
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+}
+
+/// Linked IdP subject for a user within an org.
+model UserSsoIdentity {
+  id             String   @id @default(cuid())
+  userId         String
+  organizationId String
+  issuer         String
+  subject        String
+  email          String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([issuer, subject])
+  @@unique([organizationId, userId])
+  @@index([userId])
 }
 
 model Company {
