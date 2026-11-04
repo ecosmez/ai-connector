@@ -35,6 +35,7 @@ export async function resetDatabase(prisma: PrismaService) {
       "SsoAuthorizationCode",
       "SsoAuthState",
       "OrganizationSsoConfig",
+      "OrganizationScimToken",
       "MfaChallenge",
       "UserMfaFactor",
       "Notification",

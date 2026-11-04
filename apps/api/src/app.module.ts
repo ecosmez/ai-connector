@@ -13,6 +13,7 @@ import { PolicyModule } from "./policy/policy.module";
 import { PrismaModule } from "./prisma/prisma.module";
 import { redisConnection } from "./redis";
 import { SemanticModule } from "./semantic/semantic.module";
+import { ScimModule } from "./scim/scim.module";
 import { SsoModule } from "./sso/sso.module";
 import { SyncModule } from "./sync/sync.module";
 import { TenancyModule } from "./tenancy/tenancy.module";
@@ -38,6 +39,7 @@ import { WorkflowsModule } from "./workflows/workflows.module";
     NotificationsModule,
     PlatformModule,
     SsoModule,
+    ScimModule,
   ],
   controllers: [HealthController],
 })

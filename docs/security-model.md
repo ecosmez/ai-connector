@@ -1,4 +1,4 @@
-# Security model — S0–S9
+# Security model — S0–S10
 
 ## Authentication
 
@@ -69,6 +69,12 @@
 - Client secrets encrypted at rest; SSO login skips local TOTP (IdP is the factor).
 - Audit: `sso.config_updated`, `user.login_sso` — never codes/secrets.
 
-## Deferred (post-S9)
+## SCIM (S10)
 
-External Entra/Google issuer wiring, SCIM, IP/geo policies, device inventory UI, org-wide “require MFA” policy, consented support break-glass.
+- Org-scoped bearer tokens (hashed at rest; shown once) for `/scim/v2/Users` ([ADR 0011](adr/0011-scim-provisioning.md)).
+- Soft deprovision: membership `suspended`; no hard user delete via SCIM.
+- Audit: `scim.token_*`, `scim.user_*` — never raw tokens.
+
+## Deferred (post-S10)
+
+External Entra/Google issuer wiring, SCIM Groups/Bulk, IP/geo policies, device inventory UI, org-wide “require MFA” policy, consented support break-glass.
