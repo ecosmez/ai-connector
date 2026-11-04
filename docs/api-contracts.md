@@ -112,6 +112,16 @@ Allowlisted tools (read-only): `list_dashboards`, `get_dashboard_overview`, `lis
 | GET | `/platform/organizations` | `isPlatformAdmin` | Directory metadata + counts |
 | GET | `/platform/health` | `isPlatformAdmin` | DB + Redis probe |
 
+## SSO (S9)
+
+| Method | Path | Auth | Notes |
+|---|---|---|---|
+| GET/PUT | `/organizations/:orgId/sso` | read / `organization:manage` | Mock SSO config |
+| GET | `/auth/sso/status` | public | `{ enabled, organizationName }` |
+| GET | `/auth/sso/start` | public | PKCE start → `{ authorizeUrl }` |
+| GET | `/auth/sso/mock/:orgId/authorize` | public | Mock IdP (form / `?email=`) |
+| GET | `/auth/sso/callback` | public | Exchanges code; `?format=json` for API |
+
 ## Health
 
 | Method | Path |
