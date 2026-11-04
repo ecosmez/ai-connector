@@ -76,5 +76,7 @@ describe("S8 platform console", () => {
       .set("Authorization", `Bearer ${ops.body.token}`)
       .expect(200);
     expect(health.body.database).toBe("ok");
+    expect(health.body.redis).toBe("ok");
+    expect(health.body.status).toBe("ok");
   });
 });

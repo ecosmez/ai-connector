@@ -102,12 +102,17 @@ export class PlatformService {
     } catch {
       database = "error";
     }
+    // lazyConnect + explicit connect avoids the race where ping() runs before
+    // the socket is writable (enableOfflineQueue:false would reject that).
     const client = new Redis(process.env.REDIS_URL ?? "redis://127.0.0.1:6379", {
       maxRetriesPerRequest: 1,
       enableOfflineQueue: false,
       connectTimeout: 2000,
+      lazyConnect: true,
+      family: 4,
     });
     try {
+      await client.connect();
       const pong = await client.ping();
       if (pong !== "PONG") redis = "error";
     } catch {
