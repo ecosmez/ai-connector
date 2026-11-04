@@ -11,6 +11,7 @@ export function AppNav({ current }: { current: string }) {
     { href: "/app/notificaciones", label: "Notificaciones" },
     { href: "/app/seguridad", label: "Seguridad" },
     { href: "/app/auditoria", label: "Auditoría" },
+    { href: "/app/plataforma", label: "Plataforma" },
   ];
 
   return (

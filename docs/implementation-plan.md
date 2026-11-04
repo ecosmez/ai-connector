@@ -25,8 +25,8 @@ Still open: D7 cloud/region, D10 retention minima, D11 DR targets (do not claim 
 | S4 Workflows (in-house DAG) | Done (PR #5) |
 | S5 Notifications + scheduled workflows | Done (in PR #6 stack) |
 | S6 MFA step-up (TOTP) | Done (merged into PR #6 stack) |
-| S7 Audit hash-chain + export | In progress (this PR) |
-| S8 | Not started (SSO/SCIM / platform console) |
+| S7 Audit hash-chain + export | Done (PR #8) |
+| S8 Platform console | Done (this PR to main; prior #9 landed on S7 branch only) |
 
 ## S4 exit criteria
 
@@ -62,3 +62,11 @@ Still open: D7 cloud/region, D10 retention minima, D11 DR targets (do not claim 
 - [x] `GET .../audit-events/verify` + `/export`
 - [x] Spanish UI `/app/auditoria`
 - [x] Tamper detection + isolation tests
+
+## S8 exit criteria
+
+- [x] ADR 0009: read-only platform console
+- [x] `User.isPlatformAdmin` + `/platform/overview|organizations|health`
+- [x] Directory metadata only (no tenant payloads)
+- [x] Spanish UI `/app/plataforma`
+- [x] Deny non-admin + smoke tests

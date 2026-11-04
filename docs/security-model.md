@@ -1,4 +1,4 @@
-# Security model — S0–S7
+# Security model — S0–S8
 
 ## Authentication
 
@@ -57,6 +57,11 @@
 - See [ADR 0007](adr/0007-mfa-and-enterprise-identity.md).
 - Audit: `user.mfa_enabled`, `user.mfa_disabled`, `user.login_mfa`, `user.login_mfa_challenge` — never codes/secrets.
 
-## Deferred (post-S6)
+## Platform console (S8)
 
-SSO (Entra, Google Workspace), SCIM, IP/geo policies, device inventory UI, org-wide “require MFA” policy.
+- `isPlatformAdmin` is explicit; does **not** unlock tenant snapshots, assistant threads, MFA secrets, or audit export of foreign orgs via tenant routes.
+- `/platform/*` returns directory aggregates only; views are audited as `platform.console_viewed`.
+
+## Deferred (post-S8)
+
+SSO (Entra, Google Workspace), SCIM, IP/geo policies, device inventory UI, org-wide “require MFA” policy, consented support break-glass.
