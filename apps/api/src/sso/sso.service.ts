@@ -493,6 +493,7 @@ export class SsoService {
           userId: user.id,
           tokenHash,
           expiresAt,
+          authMethod: "sso",
           activeOrganizationId: input.organizationId,
           activeCompanyId: null,
         },

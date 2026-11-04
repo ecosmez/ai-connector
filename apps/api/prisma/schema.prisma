@@ -63,6 +63,8 @@ model Organization {
   id        String     @id @default(cuid())
   name      String
   timezone  String     @default("America/Puerto_Rico")
+  /// When true, password logins for members require enabled TOTP (S11). SSO exempt.
+  requireMfa Boolean   @default(false)
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
   companies Company[]
@@ -269,6 +271,8 @@ model Session {
   tokenHash            String   @unique
   activeOrganizationId String?
   activeCompanyId      String?
+  /// password | sso — SSO sessions skip org requireMfa (S11).
+  authMethod           String   @default("password")
   expiresAt            DateTime
   revokedAt            DateTime?
   createdAt            DateTime @default(now())

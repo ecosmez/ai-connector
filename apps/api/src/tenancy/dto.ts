@@ -1,4 +1,4 @@
-import { IsOptional, IsString, MinLength } from "class-validator";
+import { IsBoolean, IsOptional, IsString, MinLength } from "class-validator";
 
 export class CreateOrganizationDto {
   @IsString()
@@ -18,4 +18,9 @@ export class CreateCompanyDto {
   @IsOptional()
   @IsString()
   timezone?: string;
+}
+
+export class UpdateSecurityPolicyDto {
+  @IsBoolean()
+  requireMfa!: boolean;
 }

@@ -4,8 +4,8 @@ SaaS multi-tenant de inteligencia de negocios y automatización (Fase 1 en const
 
 ## Estado
 
-**S10** — SCIM 2.0 Users + tokens de org (ADR 0011). Emisores Entra/Google y Groups siguen diferidos.  
-S0–S9 completos (SSO mock + plataforma + auditoría).
+**S11** — política org `requireMfa` (ADR 0012); SSO exento.  
+S0–S10: SCIM Users, SSO mock, plataforma, auditoría.
 
 Decisiones aceptadas: ver `docs/adr/`.
 

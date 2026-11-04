@@ -57,7 +57,7 @@ export class AuthService {
     const user = await this.prisma.user.create({
       data: { email, passwordHash, name },
     });
-    return this.createSession(user.id);
+    return this.createSession(user.id, "password");
   }
 
   async login(email: string, password: string): Promise<LoginResult> {
@@ -97,8 +97,28 @@ export class AuthService {
       };
     }
 
-    const session = await this.createSession(user.id);
+    await this.assertPasswordLoginMfaPolicy(user.id);
+
+    const session = await this.createSession(user.id, "password");
     return { ...session, mfaRequired: false };
+  }
+
+  /** Org requireMfa blocks password login without enabled TOTP. */
+  private async assertPasswordLoginMfaPolicy(userId: string) {
+    const required = await this.prisma.membership.findFirst({
+      where: {
+        userId,
+        status: "active",
+        organization: { requireMfa: true },
+      },
+      select: { organizationId: true },
+    });
+    if (!required) return;
+    throw new ApiException(
+      HttpStatus.FORBIDDEN,
+      "mfa_enrollment_required",
+      "Tu organización exige MFA. Actívalo antes de iniciar sesión con contraseña.",
+    );
   }
 
   private async createMfaChallenge(userId: string) {
@@ -156,7 +176,7 @@ export class AuthService {
       data: { consumedAt: new Date() },
     });
 
-    return this.createSession(challenge.userId);
+    return this.createSession(challenge.userId, "password");
   }
 
   async mfaStatus(userId: string) {
@@ -286,7 +306,10 @@ export class AuthService {
     return { enabled: false };
   }
 
-  async createSession(userId: string): Promise<{ token: string; user: AuthUser }> {
+  async createSession(
+    userId: string,
+    authMethod: "password" | "sso" = "password",
+  ): Promise<{ token: string; user: AuthUser }> {
     const token = randomBytes(32).toString("hex");
     const tokenHash = this.hashToken(token);
     const expiresAt = new Date();
@@ -302,6 +325,7 @@ export class AuthService {
         userId,
         tokenHash,
         expiresAt,
+        authMethod,
         activeOrganizationId: membership?.organizationId ?? null,
         activeCompanyId: membership?.companyId ?? null,
       },
@@ -339,9 +363,26 @@ export class AuthService {
         userId: session.userId,
         activeOrganizationId: session.activeOrganizationId,
         activeCompanyId: session.activeCompanyId,
+        authMethod:
+          session.authMethod === "sso" ? "sso" : "password",
         expiresAt: session.expiresAt,
       },
     };
+  }
+
+  async userHasEnabledMfa(userId: string): Promise<boolean> {
+    const factor = await this.prisma.userMfaFactor.findUnique({
+      where: { userId },
+    });
+    return Boolean(factor?.enabledAt);
+  }
+
+  async organizationRequiresMfa(organizationId: string): Promise<boolean> {
+    const org = await this.prisma.organization.findUnique({
+      where: { id: organizationId },
+      select: { requireMfa: true },
+    });
+    return Boolean(org?.requireMfa);
   }
 
   async me(userId: string) {

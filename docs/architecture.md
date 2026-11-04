@@ -1,9 +1,9 @@
 # Architecture — AI Connector
 
 **Status:** Living document for Fase 1 construction  
-**Stack ADRs:** [0001](adr/0001-application-stack.md) · [0002](adr/0002-database-and-analytics.md) · [0003](adr/0003-queue-and-workflow-engine.md) · [0004](adr/0004-llm-provider.md) · [0005](adr/0005-locale-and-sync-timezone.md) · [0006](adr/0006-workflow-engine.md) · [0007](adr/0007-mfa-and-enterprise-identity.md) · [0008](adr/0008-audit-hash-chain.md) · [0009](adr/0009-platform-console.md) · [0010](adr/0010-oidc-sso.md) · [0011](adr/0011-scim-provisioning.md)
+**Stack ADRs:** [0001](adr/0001-application-stack.md) · [0002](adr/0002-database-and-analytics.md) · [0003](adr/0003-queue-and-workflow-engine.md) · [0004](adr/0004-llm-provider.md) · [0005](adr/0005-locale-and-sync-timezone.md) · [0006](adr/0006-workflow-engine.md) · [0007](adr/0007-mfa-and-enterprise-identity.md) · [0008](adr/0008-audit-hash-chain.md) · [0009](adr/0009-platform-console.md) · [0010](adr/0010-oidc-sso.md) · [0011](adr/0011-scim-provisioning.md) · [0012](adr/0012-org-require-mfa.md)
 
-## Current shape (S10)
+## Current shape (S11)
 
 Modular monolith:
 
@@ -107,6 +107,12 @@ Deferred: real ERP/CRM connectors, full BI editor, Temporal, external IdP wiring
 2. IdP calls `/scim/v2/Users` with the token (create/list/patch/delete).
 3. Soft delete / `active=false` → membership `suspended`.
 4. Spanish UI `/app/scim`.
+
+## Require-MFA path (S11)
+
+1. Admin enables personal TOTP, then `PUT .../security-policy` `{ requireMfa: true }`.
+2. Password login without TOTP → `mfa_enrollment_required`.
+3. AuthGuard blocks non-MFA routes for password sessions in requireMfa orgs; SSO exempt.
 
 ## Non-goals in this codebase stage
 

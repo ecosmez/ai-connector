@@ -27,8 +27,9 @@ Still open: D7 cloud/region, D10 retention minima, D11 DR targets (do not claim 
 | S6 MFA step-up (TOTP) | Done (merged into PR #6 stack) |
 | S7 Audit hash-chain + export | Done (PR #8) |
 | S8 Platform console | Done (PR #10 to main; prior #9 landed on S7 branch only) |
-| S9 OIDC SSO (mock IdP) | Done (this PR to main; prior #11 landed on S8 branch only) |
-| S10 SCIM Users | In progress (this PR) |
+| S9 OIDC SSO (mock IdP) | Done (land via PR #12; prior #11 on S8 branch only) |
+| S10 SCIM Users | Done (land via PR #12 stack; prior #13 on S9 branch only) |
+| S11 Org require-MFA | In progress (this PR) |
 
 ## S4 exit criteria
 
@@ -87,3 +88,10 @@ Still open: D7 cloud/region, D10 retention minima, D11 DR targets (do not claim 
 - [x] `OrganizationScimToken` + `/scim/v2/Users` CRUD (soft delete)
 - [x] Admin mint/revoke APIs + Spanish `/app/scim`
 - [x] Provisioning + revoke tests
+
+## S11 exit criteria
+
+- [x] ADR 0012: org `requireMfa`; SSO exempt
+- [x] Security-policy GET/PUT + login/guard enforcement
+- [x] Spanish UI toggle on `/app/seguridad`
+- [x] Policy + login denial tests

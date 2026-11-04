@@ -51,6 +51,72 @@ export class TenancyService {
     });
   }
 
+  async getSecurityPolicy(userId: string, organizationId: string) {
+    await this.policyService.assertPermission(
+      userId,
+      organizationId,
+      PERMISSIONS.ORGANIZATION_READ,
+    );
+    const org = await this.prisma.withOrganizationContext(
+      organizationId,
+      (tx) =>
+        tx.organization.findUnique({
+          where: { id: organizationId },
+          select: { id: true, requireMfa: true },
+        }),
+    );
+    if (!org) {
+      throw new ApiException(
+        HttpStatus.NOT_FOUND,
+        "organization_not_found",
+        "Organización no encontrada",
+      );
+    }
+    return { organizationId: org.id, requireMfa: org.requireMfa };
+  }
+
+  async updateSecurityPolicy(
+    userId: string,
+    organizationId: string,
+    requireMfa: boolean,
+  ) {
+    await this.policyService.assertPermission(
+      userId,
+      organizationId,
+      PERMISSIONS.ORGANIZATION_MANAGE,
+    );
+    if (requireMfa) {
+      const factor = await this.prisma.userMfaFactor.findUnique({
+        where: { userId },
+      });
+      if (!factor?.enabledAt) {
+        throw new ApiException(
+          HttpStatus.BAD_REQUEST,
+          "mfa_required_for_policy",
+          "Activa MFA en tu cuenta antes de exigirla en la organización",
+        );
+      }
+    }
+    const org = await this.prisma.withOrganizationContext(
+      organizationId,
+      (tx) =>
+        tx.organization.update({
+          where: { id: organizationId },
+          data: { requireMfa },
+          select: { id: true, requireMfa: true },
+        }),
+    );
+    await this.auditService.record({
+      organizationId,
+      actorUserId: userId,
+      action: "organization.require_mfa_updated",
+      resourceType: "organization",
+      resourceId: organizationId,
+      metadata: { requireMfa },
+    });
+    return { organizationId: org.id, requireMfa: org.requireMfa };
+  }
+
   async createOrganization(
     userId: string,
     name: string,

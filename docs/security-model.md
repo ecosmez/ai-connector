@@ -1,4 +1,4 @@
-# Security model — S0–S10
+# Security model — S0–S11
 
 ## Authentication
 
@@ -75,6 +75,14 @@
 - Soft deprovision: membership `suspended`; no hard user delete via SCIM.
 - Audit: `scim.token_*`, `scim.user_*` — never raw tokens.
 
-## Deferred (post-S10)
+## Org require-MFA (S11)
 
-External Entra/Google issuer wiring, SCIM Groups/Bulk, IP/geo policies, device inventory UI, org-wide “require MFA” policy, consented support break-glass.
+- `Organization.requireMfa` ([ADR 0012](adr/0012-org-require-mfa.md)).
+- Password login denied without enabled TOTP if any membership org requires MFA.
+- AuthGuard blocks non-MFA routes for password sessions in requireMfa active org.
+- SSO sessions (`authMethod=sso`) are exempt.
+- Audit: `organization.require_mfa_updated`.
+
+## Deferred (post-S11)
+
+External Entra/Google issuer wiring, SCIM Groups/Bulk, IP/geo policies, device inventory UI, consented support break-glass.
