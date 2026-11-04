@@ -28,4 +28,32 @@ export class AuditController {
     const events = await this.auditService.listForOrganization(orgId);
     return { items: events };
   }
+
+  @Get("organizations/:orgId/audit-events/export")
+  async export(
+    @CurrentAuth() auth: RequestAuth,
+    @Param("orgId") orgId: string,
+  ) {
+    await this.policyService.assertPermission(
+      auth.user.id,
+      orgId,
+      PERMISSIONS.AUDIT_READ,
+      auth.session.activeCompanyId,
+    );
+    return this.auditService.exportForOrganization(orgId);
+  }
+
+  @Get("organizations/:orgId/audit-events/verify")
+  async verify(
+    @CurrentAuth() auth: RequestAuth,
+    @Param("orgId") orgId: string,
+  ) {
+    await this.policyService.assertPermission(
+      auth.user.id,
+      orgId,
+      PERMISSIONS.AUDIT_READ,
+      auth.session.activeCompanyId,
+    );
+    return this.auditService.verifyForOrganization(orgId);
+  }
 }

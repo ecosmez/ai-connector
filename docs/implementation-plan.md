@@ -23,9 +23,10 @@ Still open: D7 cloud/region, D10 retention minima, D11 DR targets (do not claim 
 | S2 Semantic model + KPIs + goals | Done (PR #3) |
 | S3 AI assistant (tool allowlist) | Done (PR #4) |
 | S4 Workflows (in-house DAG) | Done (PR #5) |
-| S5 Notifications + scheduled workflows | Done (PR #6) |
-| S6 MFA step-up (TOTP) | In progress (this PR) |
-| S7–S8 | Not started (SSO/SCIM, hardening / platform console) |
+| S5 Notifications + scheduled workflows | Done (in PR #6 stack) |
+| S6 MFA step-up (TOTP) | Done (merged into PR #6 stack) |
+| S7 Audit hash-chain + export | In progress (this PR) |
+| S8 | Not started (SSO/SCIM / platform console) |
 
 ## S4 exit criteria
 
@@ -53,3 +54,11 @@ Still open: D7 cloud/region, D10 retention minima, D11 DR targets (do not claim 
 - [x] Enroll / enable / disable APIs + audit events
 - [x] Spanish UI `/app/seguridad` + login MFA step
 - [x] Unit + integration MFA tests
+
+## S7 exit criteria
+
+- [x] ADR 0008: per-org audit hash-chain
+- [x] `prevHash` / `eventHash` on `AuditEvent` + advisory lock on record
+- [x] `GET .../audit-events/verify` + `/export`
+- [x] Spanish UI `/app/auditoria`
+- [x] Tamper detection + isolation tests

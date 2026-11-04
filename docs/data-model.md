@@ -1,4 +1,4 @@
-# Data model — S0–S6
+# Data model — S0–S7
 
 See also product spec §10. Table names below match Prisma models.
 
@@ -72,6 +72,10 @@ See also product spec §10. Table names below match Prisma models.
 |---|---|---|
 | `UserMfaFactor` | user | Encrypted TOTP secret + `enabledAt` |
 | `MfaChallenge` | user | Short-lived login step-up token (hashed) |
+
+## Audit integrity (S7)
+
+`AuditEvent` gains optional `prevHash` / `eventHash` (SHA-256 hex). New writes always populate both; legacy nulls are skipped until the first hashed event when verifying.
 
 ## Later (not migrated yet)
 

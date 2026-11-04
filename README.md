@@ -4,8 +4,8 @@ SaaS multi-tenant de inteligencia de negocios y automatización (Fase 1 en const
 
 ## Estado
 
-**S6** — MFA TOTP (login step-up) per ADR 0007; SSO/SCIM diferidos.  
-S0–S5: foundation → sync → KPIs → asistente → workflows → notificaciones.
+**S7** — auditoría con cadena hash + exportación JSON (ADR 0008).  
+S0–S6: foundation → sync → KPIs → asistente → workflows → notificaciones → MFA.
 
 Decisiones aceptadas: ver `docs/adr/`.
 

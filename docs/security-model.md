@@ -1,4 +1,4 @@
-# Security model — S0–S6
+# Security model — S0–S7
 
 ## Authentication
 
@@ -50,7 +50,7 @@
 
 - Append-only `AuditEvent` rows.
 - No password hashes, tokens, or secrets in `metadata`.
-- S0 does not yet implement hash-chain/WORM; planned before enterprise audit export.
+- **S7 hash-chain:** each event stores `prevHash` + `eventHash` (SHA-256); see [ADR 0008](adr/0008-audit-hash-chain.md). Export/verify endpoints expose `chainValid`. True WORM still deferred.
 
 ## MFA (S6)
 

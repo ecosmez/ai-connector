@@ -1,9 +1,9 @@
 # Architecture — AI Connector
 
 **Status:** Living document for Fase 1 construction  
-**Stack ADRs:** [0001](adr/0001-application-stack.md) · [0002](adr/0002-database-and-analytics.md) · [0003](adr/0003-queue-and-workflow-engine.md) · [0004](adr/0004-llm-provider.md) · [0005](adr/0005-locale-and-sync-timezone.md) · [0006](adr/0006-workflow-engine.md) · [0007](adr/0007-mfa-and-enterprise-identity.md)
+**Stack ADRs:** [0001](adr/0001-application-stack.md) · [0002](adr/0002-database-and-analytics.md) · [0003](adr/0003-queue-and-workflow-engine.md) · [0004](adr/0004-llm-provider.md) · [0005](adr/0005-locale-and-sync-timezone.md) · [0006](adr/0006-workflow-engine.md) · [0007](adr/0007-mfa-and-enterprise-identity.md) · [0008](adr/0008-audit-hash-chain.md)
 
-## Current shape (S6)
+## Current shape (S7)
 
 Modular monolith:
 
@@ -81,6 +81,12 @@ Deferred: real ERP/CRM connectors, full BI editor, Temporal, platform console, S
 2. `POST /auth/mfa/enable` with TOTP code → `enabledAt`.
 3. Login with MFA enabled → `{ mfaRequired, mfaToken }` → `POST /auth/mfa/verify` → session.
 4. Spanish UI `/app/seguridad` + login MFA step.
+
+## Audit integrity (S7)
+
+1. `AuditService.record` locks per-org tip and writes `prevHash`/`eventHash`.
+2. `GET .../audit-events/verify` recomputes the chain; `/export` returns JSON + `chainValid`.
+3. Spanish UI `/app/auditoria` lists events and downloads export.
 
 ## Non-goals in this codebase stage
 
