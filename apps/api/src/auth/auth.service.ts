@@ -69,6 +69,13 @@ export class AuthService {
         "Credenciales inválidas",
       );
     }
+    if (!user.passwordHash) {
+      throw new ApiException(
+        HttpStatus.UNAUTHORIZED,
+        "invalid_credentials",
+        "Credenciales inválidas",
+      );
+    }
     const ok = await bcrypt.compare(password, user.passwordHash);
     if (!ok) {
       throw new ApiException(
@@ -238,6 +245,13 @@ export class AuthService {
     const user = await this.prisma.user.findUniqueOrThrow({
       where: { id: userId },
     });
+    if (!user.passwordHash) {
+      throw new ApiException(
+        HttpStatus.BAD_REQUEST,
+        "password_required",
+        "Esta cuenta no tiene contraseña local",
+      );
+    }
     const ok = await bcrypt.compare(password, user.passwordHash);
     if (!ok) {
       throw new ApiException(

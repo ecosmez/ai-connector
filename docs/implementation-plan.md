@@ -26,7 +26,8 @@ Still open: D7 cloud/region, D10 retention minima, D11 DR targets (do not claim 
 | S5 Notifications + scheduled workflows | Done (in PR #6 stack) |
 | S6 MFA step-up (TOTP) | Done (merged into PR #6 stack) |
 | S7 Audit hash-chain + export | Done (PR #8) |
-| S8 Platform console | Done (this PR to main; prior #9 landed on S7 branch only) |
+| S8 Platform console | Done (PR #10 to main; prior #9 landed on S7 branch only) |
+| S9 OIDC SSO (mock IdP) | In progress (this PR) |
 
 ## S4 exit criteria
 
@@ -70,3 +71,11 @@ Still open: D7 cloud/region, D10 retention minima, D11 DR targets (do not claim 
 - [x] Directory metadata only (no tenant payloads)
 - [x] Spanish UI `/app/plataforma`
 - [x] Deny non-admin + smoke tests
+
+## S9 exit criteria
+
+- [x] ADR 0010: OIDC + mock IdP; SCIM deferred
+- [x] `OrganizationSsoConfig` + PKCE start/callback + `UserSsoIdentity`
+- [x] Mock authorize issues codes; JIT membership optional
+- [x] Spanish UI login SSO + `/app/sso`
+- [x] Isolation / login tests
