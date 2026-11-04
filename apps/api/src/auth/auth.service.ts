@@ -30,8 +30,18 @@ export class AuthService {
     return createHash("sha256").update(token).digest("hex");
   }
 
-  private toUser(user: { id: string; email: string; name: string }): AuthUser {
-    return { id: user.id, email: user.email, name: user.name };
+  private toUser(user: {
+    id: string;
+    email: string;
+    name: string;
+    isPlatformAdmin?: boolean;
+  }): AuthUser {
+    return {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      isPlatformAdmin: Boolean(user.isPlatformAdmin),
+    };
   }
 
   async register(email: string, password: string, name: string) {

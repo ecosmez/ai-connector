@@ -18,6 +18,7 @@ export const PERMISSIONS = {
   WORKFLOW_MANAGE: "workflow:manage",
   WORKFLOW_MULTI_COMPANY: "workflow:multi_company",
   NOTIFICATION_READ: "notification:read",
+  PLATFORM_ADMIN: "platform:admin",
 } as const;
 
 export type Permission = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];

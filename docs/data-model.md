@@ -1,4 +1,4 @@
-# Data model — S0–S7
+# Data model — S0–S8
 
 See also product spec §10. Table names below match Prisma models.
 
@@ -77,6 +77,10 @@ See also product spec §10. Table names below match Prisma models.
 
 `AuditEvent` gains optional `prevHash` / `eventHash` (SHA-256 hex). New writes always populate both; legacy nulls are skipped until the first hashed event when verifying.
 
+## Platform (S8)
+
+`User.isPlatformAdmin` marks cross-tenant console operators (directory only).
+
 ## Later (not migrated yet)
 
-SSO IdP bindings, SCIM, cross-company workflow graphs, Temporal, full BI editor, platform console. AI tools remain read-only for mutations.
+SSO IdP bindings, SCIM, cross-company workflow graphs, Temporal, full BI editor. AI tools remain read-only for mutations.

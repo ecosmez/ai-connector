@@ -47,6 +47,17 @@ async function main() {
     update: {},
   });
 
+  const platform = await prisma.user.upsert({
+    where: { email: "platform@example.com" },
+    create: {
+      email: "platform@example.com",
+      name: "Platform Ops",
+      passwordHash,
+      isPlatformAdmin: true,
+    },
+    update: { isPlatformAdmin: true },
+  });
+
   const orgA = await prisma.organization.upsert({
     where: { id: "seed_org_a" },
     create: {
@@ -327,6 +338,7 @@ async function main() {
   console.log("Seed complete:", {
     alice: alice.email,
     bob: bob.email,
+    platform: platform.email,
     orgs: [orgA.name, orgB.name],
     companies: [companyA1.name, companyA2.name],
     connection: connection.name,

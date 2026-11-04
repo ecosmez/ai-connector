@@ -83,4 +83,15 @@ export class PolicyService {
       );
     }
   }
+
+  async assertPlatformAdmin(userId: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user?.isPlatformAdmin) {
+      throw new ApiException(
+        HttpStatus.FORBIDDEN,
+        "platform_forbidden",
+        "Se requiere administrador de plataforma",
+      );
+    }
+  }
 }
