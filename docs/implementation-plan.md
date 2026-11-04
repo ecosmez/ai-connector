@@ -27,7 +27,7 @@ Still open: D7 cloud/region, D10 retention minima, D11 DR targets (do not claim 
 | S6 MFA step-up (TOTP) | Done (merged into PR #6 stack) |
 | S7 Audit hash-chain + export | Done (PR #8) |
 | S8 Platform console | Done (PR #10 to main; prior #9 landed on S7 branch only) |
-| S9 OIDC SSO (mock IdP) | In progress (this PR) |
+| S9 OIDC SSO (mock IdP) | Done (this PR to main; prior #11 landed on S8 branch only) |
 
 ## S4 exit criteria
 
