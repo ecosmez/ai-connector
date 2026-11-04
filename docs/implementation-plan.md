@@ -26,7 +26,7 @@ Still open: D7 cloud/region, D10 retention minima, D11 DR targets (do not claim 
 | S5 Notifications + scheduled workflows | Done (in PR #6 stack) |
 | S6 MFA step-up (TOTP) | Done (merged into PR #6 stack) |
 | S7 Audit hash-chain + export | Done (PR #8) |
-| S8 Platform console | In progress (this PR) |
+| S8 Platform console | Done (this PR to main; prior #9 landed on S7 branch only) |
 
 ## S4 exit criteria
 
